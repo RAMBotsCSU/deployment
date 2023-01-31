@@ -1,6 +1,6 @@
 # RamBOTs Final Repo
                    
-This is the official CSU RAMBots Source repository, consisting of programs currently deployed on the robot. 
+This is the official CSU RAMBots Final repository, consisting of programs currently deployed on the robot. 
 Visit us at our [website](https://projects-web.engr.colostate.edu/ece-sr-design/AY22/RamBOTs).
 
 Based on OpenDogV3 by James Bruton. Original repository can be found [here](https://github.com/XRobots/openDogV3)
