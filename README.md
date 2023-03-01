@@ -1,4 +1,4 @@
-# RamBOTs Final Repo
+# RamBOTs Deployment Repo
                    
 This is the official CSU RAMBots Deployment repository, consisting of programs currently deployed on the robot. 
 Visit us at our [website](https://projects-web.engr.colostate.edu/ece-sr-design/AY22/RamBOTs).
