@@ -38,9 +38,9 @@ Files:
 | File        | Description           |
 | ------------- |-------------|
 | **opendog_walk_cycle_demo** | Directory for walking demo using opendog walking cycle |
-| &emsp;pi_simple_controller.py      | Pi program to poll controller inputs and interface with openDog code on the Teensy|
-| &emsp;teensy_serial_main_opendog      | Teensy program implementing opendogV3 walk cycle  |
+| &emsp;↳ pi_simple_controller.py      | Pi program to poll controller inputs and interface with openDog code on the Teensy|
+| &emsp;↳ teensy_serial_main_opendog      | Teensy program implementing opendogV3 walk cycle  |
 | **rambots_serial_main** | Directory for original Rambots Pi-Teensy serial communication programs |
-| &emsp;pi_serial_main.py        |  Pi program to run controller and communicate high level movement to Teensy   |
-| &emsp;color_test.sh        | Auxillary bash scripts to manage controller color |
-| &emsp;teensy_serial_main       | Teensy program to convert high level movement commands from Pi to ODrive instructions |
+| &emsp;↳ pi_serial_main.py        |  Pi program to run controller and communicate high level movement to Teensy   |
+| &emsp;↳ color_test.sh        | Auxillary bash scripts to manage controller color |
+| &emsp;↳ teensy_serial_main       | Teensy program to convert high level movement commands from Pi to ODrive instructions |
