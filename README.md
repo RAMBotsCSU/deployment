@@ -44,3 +44,5 @@ Files:
 | &emsp;↳ pi_serial_main.py        |  Pi program to run controller and communicate high level movement to Teensy   |
 | &emsp;↳ color_test.sh        | Auxillary bash scripts to manage controller color |
 | &emsp;↳ teensy_serial_main       | Teensy program to convert high level movement commands from Pi to ODrive instructions |
+| **fullCalibration.py** | O-drive/desc configuration program |
+
