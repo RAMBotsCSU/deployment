@@ -72,6 +72,10 @@ sheep3 = pygame.mixer.Sound(audioFolder + 'Sheeps/sheep3.mp3')
 sheep4 = pygame.mixer.Sound(audioFolder + 'Sheeps/sheep4.mp3')
 sheep5 = pygame.mixer.Sound(audioFolder + 'Sheeps/sheep_sounds.mp3')
 
+hi1 = pygame.mixer.Sound(audioFolder + 'Hello/hi1.mp3')
+hi2 = pygame.mixer.Sound(audioFolder + 'Hello/hi2.mp3')
+hi3 = pygame.mixer.Sound(audioFolder + 'Hello/hi3.mp3')
+
 walkMode = pygame.mixer.Sound(audioFolder + 'Mode_Switch/walking.mp3')
 walkAlternate = pygame.mixer.Sound(audioFolder + 'Mode_Switch/walking_here.mp3')
 pushUpsMode = pygame.mixer.Sound(audioFolder + 'Mode_Switch/push_ups.mp3')
@@ -106,6 +110,10 @@ sheep3.set_volume(0.8)
 sheep4.set_volume(0.8)
 sheep5.set_volume(0.5)
 
+hi1.set_volume(0.5)
+hi2.set_volume(0.5)
+hi3.set_volume(0.5)
+
 walkMode.set_volume(0.5)
 walkAlternate.set_volume(0.45)
 pushUpsMode.set_volume(0.5)
@@ -126,6 +134,7 @@ song4.set_volume(0.25) #party rock
 
 #sound libraries
 sheep_sounds = [sheep1,sheep2,sheep3,sheep4,sheep5]
+hi_sounds = [hi1,hi2,hi3]
 mode_sounds = [walkMode,walkAlternate,pushUpsMode,pushUpsAlternate,legControlMode,legControlAlternate,gyroMode,gyroAlternate,machineLearningMode,machineLearningAlternate]
 songs = [song1,song2,song3,song4]
 
@@ -495,6 +504,7 @@ class MyController(Controller):
         
     def on_L3_press(self):
         self.miscButtonArr[3] = 1
+        pygame.mixer.Sound.play(random.choice(hi_sounds))
         pygame.mixer.Sound.play(random.choice(sheep_sounds))        
     
     def on_L3_release(self):
