@@ -513,7 +513,7 @@ class MyController(Controller):
         
     def on_L3_press(self):
         self.miscButtonArr[3] = 1
-        pygame.mixer.Sound.play(random.choice(merged_sounds))
+        #pygame.mixer.Sound.play(random.choice(merged_sounds))
         #pygame.mixer.Sound.play(random.choice(hi_sounds))
         #pygame.mixer.Sound.play(random.choice(sheep_sounds))        
     
@@ -529,6 +529,7 @@ class MyController(Controller):
         
     def on_options_press(self):
         self.miscButtonArr[1] = 1
+        pygame.mixer.Sound.play(random.choice(merged_sounds))
         
     def on_options_release(self):
         self.miscButtonArr[1] = 0
