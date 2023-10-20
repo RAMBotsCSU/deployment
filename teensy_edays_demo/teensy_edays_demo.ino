@@ -11,6 +11,7 @@
 #include <ODriveArduino.h>
 #include <HardwareSerial.h>
 #include <Wire.h>
+#include "config.h"
 
 int maxLegHeight = 380;
 int minLegHeight = 320;
