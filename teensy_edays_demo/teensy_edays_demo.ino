@@ -234,14 +234,17 @@ void loop() {
   if ((currentMillis - previousMillis >= 10)){
 
     previousMillis = currentMillis;
-
+    runningMode = 1;
     if(pauseFlag){
       switch (runningMode) {
       case 0: // opendog walking cycle - white
         openDogWalkCycle(joystickArr[1],joystickArr[0],joystickArr[3],joystickArr[2],joystickArr[5],false);
         break;
       case 1: // push up mode - yellow
-        pushUps(shapeButtonArr[3]);
+        pushUps(1);
+        delay(1000);
+        pushUps(0);
+        delay(1000);
         break;
       case 2: // left/right control - orange
         LRControl(joystickArr[0],joystickArr[1],joystickArr[2],joystickArr[3],joystickArr[4],joystickArr[5]);
