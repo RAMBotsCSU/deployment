@@ -242,7 +242,24 @@ void loop() {
         break;
       case 1: // push up mode - yellow
         pushUps(1);
+        delay(10);
+        pushUps(1);
+        delay(10);
+        pushUps(1);
+        delay(10);
+        pushUps(1);
+        delay(10);
+        pushUps(1);
         delay(1000);
+        
+        pushUps(0);
+        delay(10);
+        pushUps(0);
+        delay(10);
+        pushUps(0);
+        delay(10);
+        pushUps(0);
+        delay(10);
         pushUps(0);
         delay(1000);
         break;
