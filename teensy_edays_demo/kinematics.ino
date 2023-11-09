@@ -348,10 +348,13 @@ void kinematics (int leg, float xIn, float yIn, float zIn, float roll, float pit
           float shoulderAngle2Counts = shoulderAngle2Degrees * conversion; // convert to encoder counts
           float shoulderAngleCounts = shoulderAngle1Counts + shoulderAngle2Counts;
           float kneeAngleCounts = (kneeAngleDegrees-90) * conversion; // convert to encoder counts 
-          float hipAngleCounts = hipAngle1Degrees * conversion;    // convert to encoder counts       
-          driveJoints (21, shoulderAngleCounts);    // front right shoulder
-          driveJoints (20, kneeAngleCounts);    // front right knee  
-          driveJoints (10, hipAngleCounts);     // front right hip
+          float hipAngleCounts = hipAngle1Degrees * conversion;    // convert to encoder counts     
+          if (!(isnan(shoulderAngleCounts) && isnan(kneeAngleCounts) && isnan(hipAngleCounts)))  {
+            driveJoints (21, shoulderAngleCounts);    // front right shoulder
+            driveJoints (20, kneeAngleCounts);    // front right knee  
+            driveJoints (10, hipAngleCounts);     // front right hip
+          }
+          
       }
       
       else if (leg == 2) {     // front left
@@ -359,10 +362,13 @@ void kinematics (int leg, float xIn, float yIn, float zIn, float roll, float pit
           float shoulderAngle2Counts = shoulderAngle2Degrees * conversion; // convert to encoder counts
           float shoulderAngleCounts = shoulderAngle1Counts + shoulderAngle2Counts;
           float kneeAngleCounts = (kneeAngleDegrees-90) * conversion; // convert to encoder counts 
-          float hipAngleCounts = hipAngle1Degrees * conversion;    // convert to encoder counts       
-          driveJoints (51, shoulderAngleCounts);    // front left shoulder
-          driveJoints (50, kneeAngleCounts);    // front left knee
-          driveJoints (40, hipAngleCounts);     // front left hip
+          float hipAngleCounts = hipAngle1Degrees * conversion;    // convert to encoder counts     
+          if (!(isnan(shoulderAngleCounts) && isnan(kneeAngleCounts) && isnan(hipAngleCounts)))  {
+            driveJoints (51, shoulderAngleCounts);    // front left shoulder
+            driveJoints (50, kneeAngleCounts);    // front left knee
+            driveJoints (40, hipAngleCounts);     // front left hip
+          }  
+          
       }
       
       else if (leg == 3) {     // back left
@@ -370,10 +376,13 @@ void kinematics (int leg, float xIn, float yIn, float zIn, float roll, float pit
           float shoulderAngle2Counts = shoulderAngle2Degrees * conversion; // convert to encoder counts
           float shoulderAngleCounts = shoulderAngle1Counts - shoulderAngle2Counts;
           float kneeAngleCounts = (kneeAngleDegrees-90) * conversion; // convert to encoder counts 
-          float hipAngleCounts = hipAngle1Degrees * conversion;    // convert to encoder counts        
-          driveJoints (61, shoulderAngleCounts);    // back left shoulder
-          driveJoints (60, kneeAngleCounts);    // back left knee
-          driveJoints (41, hipAngleCounts);     // back left hip
+          float hipAngleCounts = hipAngle1Degrees * conversion;    // convert to encoder counts    
+          if (!(isnan(shoulderAngleCounts) && isnan(kneeAngleCounts) && isnan(hipAngleCounts)))  {    
+            driveJoints (61, shoulderAngleCounts);    // back left shoulder
+            driveJoints (60, kneeAngleCounts);    // back left knee
+            driveJoints (41, hipAngleCounts);     // back left hip
+          }
+          
           
       }
       
@@ -382,10 +391,12 @@ void kinematics (int leg, float xIn, float yIn, float zIn, float roll, float pit
           float shoulderAngle2Counts = shoulderAngle2Degrees * conversion; // convert to encoder counts
           float shoulderAngleCounts = shoulderAngle1Counts - shoulderAngle2Counts;
           float kneeAngleCounts = (kneeAngleDegrees-90) * conversion; // convert to encoder counts 
-          float hipAngleCounts = hipAngle1Degrees * conversion;    // convert to encoder counts        
-          driveJoints (31, shoulderAngleCounts);    // back right shoulder
-          driveJoints (30, kneeAngleCounts);    // back right knee
-          driveJoints (11, hipAngleCounts);     // back right hip
+          float hipAngleCounts = hipAngle1Degrees * conversion;    // convert to encoder counts 
+          if (!(isnan(shoulderAngleCounts) && isnan(kneeAngleCounts) && isnan(hipAngleCounts)))  {       
+            driveJoints (31, shoulderAngleCounts);    // back right shoulder
+            driveJoints (30, kneeAngleCounts);    // back right knee
+            driveJoints (11, hipAngleCounts);     // back right hip
+          }
       }
 
 
