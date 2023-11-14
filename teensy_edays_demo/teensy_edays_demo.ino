@@ -114,6 +114,9 @@ void setup() {
   RateCalibrationPitch/=500;
   RateCalibrationYaw/=500;
   modifyGains();
+
+  // TEMP
+  Serial.setTimeout(100);
 }
 
 String getArrStr(){
@@ -121,10 +124,10 @@ String getArrStr(){
   
   String stringArr[] = {",","M:","LD:","RD:","UD:","DD:","Sq:","Tr:","Ci:","Xx:","Sh:","Op:","Ps:","L3:","R3:"};
 
-  stringFinal = stringArr[0] + joystickArr[0] + stringArr[0] + joystickArr[1] + stringArr[0] + joystickArr[2] + stringArr[0] + joystickArr[3] + stringArr[0] + joystickArr[4] + stringArr[0] + joystickArr[5] + stringArr[0] + 
+  stringFinal = String(joystickArr[0]) + stringArr[0] + joystickArr[1] + stringArr[0] + joystickArr[2] + stringArr[0] + joystickArr[3] + stringArr[0] + joystickArr[4] + stringArr[0] + joystickArr[5] + stringArr[0] + 
   stringArr[1] + runningMode + stringArr[0] + stringArr[2] + dpadArr[0] + stringArr[0] + stringArr[3] + dpadArr[1] + stringArr[0] + stringArr[4] + dpadArr[2] + stringArr[0] + stringArr[5] + dpadArr[3] + stringArr[0] + 
   stringArr[6] + shapeButtonArr[0] + stringArr[0] + stringArr[7] + shapeButtonArr[1] + stringArr[0] + stringArr[8] + shapeButtonArr[2] + stringArr[0] + stringArr[9] + shapeButtonArr[3] + stringArr[0] + 
-  stringArr[10] + miscButtonArr[0] + stringArr[0] + stringArr[11] + miscButtonArr[1] + stringArr[0] + stringArr[12] + miscButtonArr[2] + stringArr[0] + stringArr[13] + miscButtonArr[3] + stringArr[0] + stringArr[14] + miscButtonArr[4];
+  stringArr[10] + miscButtonArr[0] + stringArr[0] + stringArr[11] + miscButtonArr[1] + stringArr[0] + stringArr[12] + miscButtonArr[2] + stringArr[0] + stringArr[13] + miscButtonArr[3] + stringArr[0] + stringArr[14] + miscButtonArr[4] + '#';
   return stringFinal;  
 }
 
@@ -193,29 +196,109 @@ Interpolation interpBLY;
 Interpolation interpBLZ;
 Interpolation interpBLT;
 
+const int BUFFER_SIZE = 300;
+char buf[BUFFER_SIZE];
+
 //Main loop to be executed
 void loop() {
-  String readStr = Serial.readString();               //Read the serial line and set to readStr
-  readStr.trim();                                     //Remove any \r \n whitespace at the end of the String
-  readStr = rmPadStr(readStr);                        //Remove any padding from readStr
-  if (readStr != ""){                                 //readStr == "" if the serial read had nothing in it
-    //,1.000,1.000,1.000,1.000,1.000,1.000,M:0,LD:0,RD:0,UD:0,DD:0,Sq:0,Tr:0,Ci:0,Xx:0,Sh:0,Op:0,Ps:0,L3:0,R3:0
-    for(int i = 0; i < 6; i++){ //get the joystickArr values
-      joystickArr[i] = readStr.substring(1+(i*6),6+(i*6)).toFloat()-1; //0 = L3LR, 1 = L3UD, 2 = Triggers, 3 = R3LR, 4 = R3UD
+  
+  // check if data is available
+  int rxlen = Serial.available(); // number of bytes available in Serial buffer
+  
+  if (rxlen > 10) {
+    int rlen; // number of bytes to read
+    if (rxlen > BUFFER_SIZE) // check if the data exceeds the buffer size
+      rlen = BUFFER_SIZE;    // if yes, read BUFFER_SIZE bytes. The remaining will be read in the next time
+    else
+      rlen = rxlen;
+
+    // read the incoming bytes:
+    rlen = Serial.readBytesUntil('#', buf, BUFFER_SIZE);
+    // Serial.println("Recieved");
+
+    String readStr = buf;               //Read the serial line and set to readStr
+    Serial.println(readStr);
+  
+  
+    // readStr.trim();                                     //Remove any \r \n whitespace at the end of the String
+    // readStr = rmPadStr(readStr);                        //Remove any padding from readStr
+    if (readStr != ""){                                 //readStr == "" if the serial read had nothing in it
+      // Joystick Values ///////////////////////////////////////////
+      int j0Index = readStr.indexOf("J0:");
+      joystickArr[0] = readStr.substring(j0Index+3,j0Index+8).toFloat() - 1;
+
+      int j1Index = readStr.indexOf("J1:");
+      joystickArr[1] = readStr.substring(j1Index+3,j1Index+8).toFloat() - 1;
+
+      int j2Index = readStr.indexOf("J2:");
+      joystickArr[2] = readStr.substring(j2Index+3,j2Index+8).toFloat() - 1;
+
+      int j3Index = readStr.indexOf("J3:");
+      joystickArr[3] = readStr.substring(j3Index+3,j3Index+8).toFloat() - 1;
+
+      int j4Index = readStr.indexOf("J4:");
+      joystickArr[4] = readStr.substring(j4Index+3,j4Index+8).toFloat() - 1;
+
+      int j5Index = readStr.indexOf("J5:");
+      joystickArr[5] = readStr.substring(j5Index+3,j5Index+8).toFloat() - 1;
+
+
+      // D Pad Buttons ///////////////////////////////////////////
+
+      int mIndex = readStr.indexOf("M:");
+      runningMode = readStr.substring(mIndex+2,mIndex+3).toInt(); //get the mode (int)
+
+      int ldIndex = readStr.indexOf("LD:");
+      dpadArr[0] = readStr.substring(ldIndex+3,ldIndex+4).toInt();
+
+      int rdIndex = readStr.indexOf("RD:");
+      dpadArr[1] = readStr.substring(rdIndex+3,rdIndex+4).toInt();
+
+      int udIndex = readStr.indexOf("UD:");
+      dpadArr[2] = readStr.substring(udIndex+3,udIndex+4).toInt();
+
+      int ddIndex = readStr.indexOf("DD:");
+      dpadArr[3] = readStr.substring(ddIndex+3,ddIndex+4).toInt();
+
+
+      // Shape Buttons ///////////////////////////////////////////
+
+      int sqIndex = readStr.indexOf("Sq:");
+      shapeButtonArr[0] = readStr.substring(sqIndex+3,sqIndex+4).toInt();
+
+      int trIndex = readStr.indexOf("Tr:");
+      shapeButtonArr[1] = readStr.substring(trIndex+3,trIndex+4).toInt();
+
+      int ciIndex = readStr.indexOf("Ci:");
+      shapeButtonArr[2] = readStr.substring(ciIndex+3,ciIndex+4).toInt();
+
+      int xxIndex = readStr.indexOf("Xx:");
+      shapeButtonArr[3] = readStr.substring(xxIndex+3,xxIndex+4).toInt();
+
+
+      // Misc Buttons ///////////////////////////////////////////
+
+      int shIndex = readStr.indexOf("Sh:");
+      miscButtonArr[0] = readStr.substring(shIndex+3,shIndex+4).toInt();
+
+      int opIndex = readStr.indexOf("Op:");
+      miscButtonArr[1] = readStr.substring(opIndex+3,opIndex+4).toInt();
+
+      int psIndex = readStr.indexOf("Ps:");
+      miscButtonArr[2] = readStr.substring(psIndex+3,psIndex+4).toInt();
+
+      int l3Index = readStr.indexOf("L3:");
+      miscButtonArr[3] = readStr.substring(l3Index+3,l3Index+4).toInt();
+
+      int r3Index = readStr.indexOf("R3:");
+      miscButtonArr[4] = readStr.substring(r3Index+3,r3Index+4).toInt();
+
+      Serial.println(getArrStr());
     }
-    runningMode = readStr.substring(39,40).toInt(); //get the mode (int)
-    for(int i = 0; i < 4; i++){ //get the dpadArr values L,R,U,D (int)
-      dpadArr[i] = readStr.substring(44+(i*5),45+(i*5)).toInt();
-    }
-    for(int i = 0; i < 4; i++){ //get the shapeButtonArr values Sq, Tr, Cir, X (int)
-      shapeButtonArr[i] = readStr.substring(64+(i*5),65+(i*5)).toInt();
-    }
-    for(int i = 0; i < 5; i++){ //get the miscButtonArr values Share, Options, PS, L3, R3 (int)
-      miscButtonArr[i] = readStr.substring(84+(i*5),85+(i*5)).toInt();
-    }
-    Serial.println(getArrStr());
-//    Serial.println(readStr);
+
+    
   }
+
   if(shapeButtonArr[0]==1 && gainsFlag){
     modifyGains();
     gainsFlag = false;
