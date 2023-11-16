@@ -217,7 +217,7 @@ void loop() {
     // Serial.println("Recieved");
 
     String readStr = buf;               //Read the serial line and set to readStr
-    Serial.println(readStr);
+    // Serial.println(readStr);
   
   
     // readStr.trim();                                     //Remove any \r \n whitespace at the end of the String
@@ -293,7 +293,7 @@ void loop() {
       int r3Index = readStr.indexOf("R3:");
       miscButtonArr[4] = readStr.substring(r3Index+3,r3Index+4).toInt();
 
-      Serial.println(getArrStr());
+      // Serial.println(getArrStr());
     }
 
     

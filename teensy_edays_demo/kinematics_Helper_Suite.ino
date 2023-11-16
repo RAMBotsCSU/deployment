@@ -61,7 +61,7 @@ void triangleWalkOld(int dir, float walkMaxH, float walkMinH, float walkMaxF, fl
   walkMaxF = walkMaxF*-1;
   walkMinF = walkMinF*-1;
   double tempX = -1;
-  Serial.println("Test Walk Triangle");
+  // Serial.println("Test Walk Triangle");
   Serial << "Dir: " << dir << " walkMaxH: " << walkMaxH << " walkMinH: " << walkMinH << " walkMaxF: " << walkMaxF << " walkMinF: " << walkMaxF << '\n';
   //Initial pos
   kinematics(1,dir*walkMinF,walkY,walkMaxH,0,0,0,0,0);
@@ -75,14 +75,14 @@ void triangleWalkOld(int dir, float walkMaxH, float walkMinH, float walkMaxF, fl
   }
   //down
   delay(stepDelay);
-  Serial.println("Going down");
+  // Serial.println("Going down");
   for (int i = walkMinH; i<=walkMaxH; i++){ //down
     kinematics(1,dir*walkMaxF,walkY,i,0,0,0,0,0);
     //Serial << "Just moved to Z: " << i << "\n";
   }
   //back
   delay(stepDelay);
-  Serial.println("Going back");
+  // Serial.println("Going back");
   for (int i = walkMaxF; i<=walkMinF; i++){ //back
     kinematics(1,dir*i,walkY,walkMaxH,0,0,0,0,0);
     //Serial << "Just moved to X: " << i << "\n";
