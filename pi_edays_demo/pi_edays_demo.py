@@ -386,9 +386,9 @@ def rmPadStr(val):
 
 def serial_read_write(string): # use time library to call every 10 ms in separate thread
     ser.write(padStr(string).encode())
-    inp = str(ser.readline())
-    inp = inp[2:-5]
-    inp = rmPadStr(inp)
+    # inp = str(ser.readline())
+    # inp = inp[2:-5]
+    # inp = rmPadStr(inp)
     #window['text'].update(inp)
     #print("From teensy: " + inp)
 #     if (gui_counter == 5):
