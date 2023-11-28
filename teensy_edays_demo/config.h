@@ -8,7 +8,7 @@ float offSet50 = 1.24;  // KNEE
 
 // LEFT BACK LEG
 float offSet41 = 0.11;  // HIP
-float offSet61 = -0.75;  // SHOULDER
+float offSet61 = -0.65;  // SHOULDER
 float offSet60 = -0.60;  // KNEE
 
 // RIGHT FRONT LEG
@@ -18,7 +18,7 @@ float offSet20 = -1.15;  // KNEE
 
 // RIGHT BACK LEG
 float offSet11 = 0.50;  // HIP
-float offSet31 = 0.85;  // SHOULDER
+float offSet31 = 0.75;  // SHOULDER
 float offSet30 = 2.50;  // KNEE
 
 #endif
