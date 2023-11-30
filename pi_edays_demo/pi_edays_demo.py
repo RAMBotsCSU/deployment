@@ -185,22 +185,37 @@ def gui_table_handler(controller): # update the GUI table with controller inputs
 
 
 
-process = None
+processML = None
 
 def startML():
     pygame.mixer.Sound.play(startMLSound)
-    global process
+    global processML
     print("starting machine learning!")
-    process = subprocess.Popen(['python3', 'machine_learning/Object_Detection.py','--geometry', '800x600+100+100'])
+    processML = subprocess.Popen(['python3', 'machine_learning/Object_Detection.py','--geometry', '800x600+100+100'])
 
 
 def killML():
     pygame.mixer.Sound.play(stopMLSound)
-    global process
-    if process:
+    global processML
+    if processML:
         print("killing machine learning.")
-        process.terminate()
-        process.wait()
+        processML.terminate()
+        processML.wait()
+
+
+processLidar = None
+
+def startLidar():
+    global processLidar
+    print("starting lidar mapping")
+    processLidar = subprocess.Popen(['python3', '../../testing/lidar/lidar_map.py','--geometry', '800x600+100+100'])
+
+def killLidar():
+    global processLidar
+    if processLidar:
+        print("killing machine learning.")
+        processLidar.terminate()
+        processLidar.wait()
 
 
 def playModeSounds(mode):
@@ -346,6 +361,7 @@ def driver_thread_funct(controller):
         #update_gui_table_controller(controller)
 
 
+
 class MyController(Controller):
 
     def __init__(self, **kwargs):
@@ -365,6 +381,7 @@ class MyController(Controller):
         self.pauseChangeFlag = True
         self.deadzone = 32767/10
         self.running_ML = False
+        self.running_lidar = False
 
     def on_L3_up(self, value):
         if (abs(value) > self.deadzone):
@@ -477,6 +494,12 @@ class MyController(Controller):
         
     def on_circle_press(self):
         self.shapeButtonArr[2] = 1
+        if (self.mode == 1 and not self.running_lidar):
+            self.running_lidar = True
+            startLidar()
+        elif self.mode == 1 and self.running_lidar:
+            self.running_lidar = False
+            killLidar()
         if(self.mode == 5):
             playSongs(3)
         
@@ -600,6 +623,10 @@ pi_gui_table_thread.start()
 driver_thread = threading.Thread(target=driver_thread_funct, args=(controller,))
 driver_thread.daemon = True
 driver_thread.start()
+
+lidar_thread = threading.Thread(target=lidar_thread_funct, args=(controller,))
+lidar_thread.daemon = True
+lidar_thread.start()
 
 
 controller.listen()
