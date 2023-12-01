@@ -522,10 +522,10 @@ class MyController(Controller):
         
     def on_circle_press(self):
         self.shapeButtonArr[2] = 1
-        if (self.mode == 1 and not self.running_lidar):
+        if (self.mode == 0 and not self.running_lidar):
             self.running_lidar = True
             startLidar()
-        elif self.mode == 1 and self.running_lidar:
+        elif self.mode == 0 and self.running_lidar:
             self.running_lidar = False
             killLidar()
         if(self.mode == 5):
