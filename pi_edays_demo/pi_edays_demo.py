@@ -210,12 +210,27 @@ def startLidar():
     print("starting lidar mapping")
     processLidar = subprocess.Popen(['python3', '../../testing/lidar/lidar_map.py','--geometry', '800x600+100+100'])
 
+# def killLidar():
+#     global processLidar
+#     if processLidar:
+#         print("killing machine learning.")
+#         processLidar.terminate()
+#         processLidar.wait()
+
 def killLidar():
     global processLidar
-    if processLidar:
-        print("killing machine learning.")
+    if processLidar and processLidar.poll() is None:
+        print("Killing Lidar mapping.")
         processLidar.terminate()
+        time.sleep(1)  # Give the process some time to terminate gracefully
+        if processLidar.poll() is None:
+            print("Forcefully killing Lidar mapping.")
+            processLidar.kill()
         processLidar.wait()
+        print("Lidar mapping terminated.")
+        processLidar = None
+    else:
+        print("Lidar mapping process not running.")
 
 
 def playModeSounds(mode):
