@@ -333,6 +333,7 @@ def driver_thread_funct(controller):
     joystickArr = [0.000, 0.000, 0.000, 0.000, 0.000, 0.000]
     rgb(0)
     gui_update_counter = 0
+    global processLidar
     
     #running section
     while True:
