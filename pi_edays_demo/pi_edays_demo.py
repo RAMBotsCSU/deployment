@@ -14,7 +14,8 @@ from pygame import mixer
 import random
 from serial.serialutil import SerialException
 import PySimpleGUI as sg
-import re
+import signal
+# import re
 
 sg.theme('DarkGreen2')
 
@@ -221,7 +222,7 @@ def killLidar():
     global processLidar
     if processLidar and processLidar.poll() is None:
         print("Killing Lidar mapping.")
-        processLidar.terminate()
+        processLidar.send_signal(signal.SIGINT)
         time.sleep(1)  # Give the process some time to terminate gracefully
         if processLidar.poll() is None:
             print("Forcefully killing Lidar mapping.")
