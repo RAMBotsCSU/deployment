@@ -356,6 +356,12 @@ def driver_thread_funct(controller):
         controller.shapeButtonArr[1], controller.shapeButtonArr[2], controller.shapeButtonArr[3],
         controller.miscButtonArr[0], controller.miscButtonArr[1], controller.miscButtonArr[2],
         controller.miscButtonArr[3], controller.miscButtonArr[4]))
+
+        if controller.running_lidar:
+            value_to_send = "{0:.3f},{1:.3f},{2:.3f},{3:.3f},{4:.3f},{5:.3f}".format(joystickArr[0], joystickArr[1], joystickArr[2], joystickArr[3], joystickArr[4], joystickArr[5])
+            processLidar.stdin.write(value_to_send + '\n')
+            processLidar.stdin.flush()
+
                 
        # time.sleep(0.01)
         #update_gui_table_controller(controller)
