@@ -211,13 +211,6 @@ def startLidar():
     print("starting lidar mapping")
     processLidar = subprocess.Popen(['python3', '../../testing/lidar/lidar_map.py','--geometry', '800x600+100+100'])
 
-# def killLidar():
-#     global processLidar
-#     if processLidar:
-#         print("killing machine learning.")
-#         processLidar.terminate()
-#         processLidar.wait()
-
 def killLidar():
     global processLidar
     if processLidar and processLidar.poll() is None:
@@ -375,12 +368,19 @@ def driver_thread_funct(controller):
         controller.miscButtonArr[3], controller.miscButtonArr[4]))
 
         if controller.running_lidar and processLidar is not None:
-            value_to_send = "{0:.3f},{1:.3f},{2:.3f},{3:.3f},{4:.3f},{5:.3f}".format(joystickArr[0], joystickArr[1], joystickArr[2], joystickArr[3], joystickArr[4], joystickArr[5])
-
             try:
-                processLidar.stdin.write(value_to_send + '\n')
-                processLidar.stdin.flush()
-            except BrokenPipeError:
+                if processLidar.poll() is None:  # Check if the subprocess is still running
+                    value_to_send = "{0:.3f},{1:.3f},{2:.3f},{3:.3f},{4:.3f},{5:.3f}".format(joystickArr[0], joystickArr[1], joystickArr[2], joystickArr[3], joystickArr[4], joystickArr[5])
+
+                    try:
+                        processLidar.stdin.write((value_to_send + '\n').encode('utf-8'))  # encode the string to bytes
+                        processLidar.stdin.flush()
+                    except (BrokenPipeError, OSError):
+                        print("Error writing to subprocess. Subprocess might have terminated.")
+                        # Handle termination gracefully, e.g., restart the subprocess
+                else:
+                    print("Subprocess has terminated. Cannot write to stdin.")
+            except:
                 # Handle BrokenPipeError if the subprocess has terminated
                 print("Error writing to subprocess. Subprocess might have terminated.")
 
