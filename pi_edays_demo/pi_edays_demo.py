@@ -358,10 +358,15 @@ def driver_thread_funct(controller):
         controller.miscButtonArr[0], controller.miscButtonArr[1], controller.miscButtonArr[2],
         controller.miscButtonArr[3], controller.miscButtonArr[4]))
 
-        if controller.running_lidar and processLidar is not None :
+        if controller.running_lidar and processLidar is not None:
             value_to_send = "{0:.3f},{1:.3f},{2:.3f},{3:.3f},{4:.3f},{5:.3f}".format(joystickArr[0], joystickArr[1], joystickArr[2], joystickArr[3], joystickArr[4], joystickArr[5])
-            processLidar.stdin.write(value_to_send + '\n')
-            processLidar.stdin.flush()
+
+            try:
+                processLidar.stdin.write(value_to_send + '\n')
+                processLidar.stdin.flush()
+            except BrokenPipeError:
+                # Handle BrokenPipeError if the subprocess has terminated
+                print("Error writing to subprocess. Subprocess might have terminated.")
 
                 
        # time.sleep(0.01)
