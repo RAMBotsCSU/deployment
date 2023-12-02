@@ -367,6 +367,7 @@ def lidar_thread_funct(controller):
     while True:
         try:
             lidar = RPLidar(None, PORT_NAME, timeout=10)
+            print(lidar.info)
             break
         except:
             print("Error connecting to lidar. Trying again")
@@ -398,7 +399,7 @@ def lidar_thread_funct(controller):
     start_time = 0
     joystickArr = [0.000, 0.000, 0.000, 0.000, 0.000, 0.000]
 
-    print(lidar.info)
+    
 
     for scan in lidar.iter_scans():
         for (_, angle, distance) in scan:
