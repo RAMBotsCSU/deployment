@@ -15,6 +15,9 @@ import random
 from serial.serialutil import SerialException
 import PySimpleGUI as sg
 import signal
+from math import cos, sin, pi
+import csv
+from adafruit_rplidar import RPLidar
 
 sg.theme('DarkGreen2')
 
@@ -341,7 +344,6 @@ def driver_thread_funct(controller):
     joystickArr = [0.000, 0.000, 0.000, 0.000, 0.000, 0.000]
     rgb(0)
     gui_update_counter = 0
-    global processLidar
     
     #running section
     while True:
@@ -365,16 +367,75 @@ def driver_thread_funct(controller):
         controller.shapeButtonArr[1], controller.shapeButtonArr[2], controller.shapeButtonArr[3],
         controller.miscButtonArr[0], controller.miscButtonArr[1], controller.miscButtonArr[2],
         controller.miscButtonArr[3], controller.miscButtonArr[4]))
-
-
-        value_to_send = "{0:.3f},{1:.3f},{2:.3f},{3:.3f},{4:.3f},{5:.3f}".format(joystickArr[0], joystickArr[1], joystickArr[2], joystickArr[3], joystickArr[4], joystickArr[5])
-
-        fifo_write.write(value_to_send + '\n')
-        fifo_write.flush()
-
                 
        # time.sleep(0.01)
         #update_gui_table_controller(controller)
+
+def lidar_thread_funct(controller):
+
+    # Set up pygame and the display
+    os.putenv('SDL_FBDEV', '/dev/fb1')
+    pygame.init()
+    lcd = pygame.display.set_mode((320,240))
+    pygame.mouse.set_visible(False)
+    lcd.fill((0,0,0))
+    pygame.display.update()
+
+
+    # CSV file name
+    output_file = 'lidar_data.csv'
+
+    # Setup the RPLidar
+    PORT_NAME = '/dev/ttyUSB0'
+    lidar = RPLidar(None, PORT_NAME, timeout=7)
+    
+            
+    max_distance = 0
+
+    def process_data(data):
+        global max_distance
+        lcd.fill((0,0,0))
+        # Initialize a list to store Lidar data
+        processed_data = []
+        for angle in range(360):
+            distance = float(data[angle])
+            if distance > 0:                  # ignore initially ungathered data points
+                max_distance = max([min([5000, distance]), max_distance])
+                radians = angle * pi / 180.0
+                x = distance * cos(radians)
+                y = distance * sin(radians)
+                point = (160 + int(x / max_distance * 119), 120 + int(y / max_distance * 119))
+                lcd.set_at(point, pygame.Color(255, 255, 255))
+            processed_data.append(distance)
+        pygame.display.update()
+        return processed_data
+    
+    scan_data = [0] * 360
+    lidar_data = []
+    start_time = 0
+    joystickArr = [0.000, 0.000, 0.000, 0.000, 0.000, 0.000]
+
+    print(lidar.info)
+
+    for scan in lidar.iter_scans():
+        for (_, angle, distance) in scan:
+            scan_data[min([359, int(angle)])] = distance 
+
+        if controller.running_lidar:
+
+            if time.time() - start_time > .2:
+                start_time = time.time()
+                # lidar_data.append(scan_data)
+
+                joystickArr[0] = joystick_map_to_range(controller.l3_horizontal)+1
+                joystickArr[1] = joystick_map_to_range(controller.l3_vertical)+1
+                joystickArr[2] = trigger_map_to_range(controller.triggerL)+1
+                joystickArr[3] = joystick_map_to_range(controller.r3_horizontal)+1
+                joystickArr[4] = joystick_map_to_range(controller.r3_vertical)+1
+                joystickArr[5] = trigger_map_to_range(controller.triggerR)+1
+
+                lidar_data.append(process_data(scan_data) + joystickArr)
+                print('Data written to csv: ', joystickArr)
 
 
 
@@ -512,10 +573,10 @@ class MyController(Controller):
         self.shapeButtonArr[2] = 1
         if (self.mode == 0 and not self.running_lidar):
             self.running_lidar = True
-            startLidar()
+            # startLidar()
         elif self.mode == 0 and self.running_lidar:
             self.running_lidar = False
-            killLidar()
+            # killLidar()
         if(self.mode == 5):
             playSongs(3)
         
@@ -649,6 +710,10 @@ pi_gui_table_thread.start()
 driver_thread = threading.Thread(target=driver_thread_funct, args=(controller,))
 driver_thread.daemon = True
 driver_thread.start()
+
+lidar_thread = threading.Thread(target=lidar_thread_funct, args=(controller,))
+lidar_thread.daemon = True
+lidar_thread.start()
 
 controller.listen()
 
