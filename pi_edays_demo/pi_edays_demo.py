@@ -206,29 +206,6 @@ def killML():
         processML.wait()
 
 
-processLidar = None
-
-def startLidar():
-    global processLidar
-    print("starting lidar mapping")
-    processLidar = subprocess.Popen(['python3', '../../testing/lidar/lidar_map.py','--geometry', '800x600+100+100'])
-
-def killLidar():
-    global processLidar
-    if processLidar and processLidar.poll() is None:
-        print("Killing Lidar mapping.")
-        processLidar.send_signal(signal.SIGINT)
-        time.sleep(1)  # Give the process some time to terminate gracefully
-        if processLidar.poll() is None:
-            print("Forcefully killing Lidar mapping.")
-            processLidar.kill()
-        processLidar.wait()
-        print("Lidar mapping terminated.")
-        processLidar = None
-    else:
-        print("Lidar mapping process not running.")
-
-
 def playModeSounds(mode):
     stopSounds()
     if mode == 0:
@@ -377,7 +354,7 @@ def lidar_thread_funct(controller):
     os.putenv('SDL_FBDEV', '/dev/fb1')
     pygame.init()
     lcd = pygame.display.set_mode((320,240))
-    pygame.mouse.set_visible(False)
+    # pygame.mouse.set_visible(False)
     lcd.fill((0,0,0))
     pygame.display.update()
 
@@ -387,7 +364,7 @@ def lidar_thread_funct(controller):
 
     # Setup the RPLidar
     PORT_NAME = '/dev/ttyUSB0'
-    lidar = RPLidar(None, PORT_NAME, timeout=7)
+    lidar = RPLidar(None, PORT_NAME, timeout=10)
     
             
     max_distance = 0
@@ -436,6 +413,11 @@ def lidar_thread_funct(controller):
 
                 lidar_data.append(process_data(scan_data) + joystickArr)
                 print('Data written to csv: ', joystickArr)
+        elif len(lidar_data) > 0:
+            with open(output_file, 'w', newline='') as csvfile:
+                csv_writer = csv.writer(csvfile)
+                csv_writer.writerows(lidar_data)
+            print(f'Lidar data saved to {output_file}')
 
 
 
@@ -573,10 +555,10 @@ class MyController(Controller):
         self.shapeButtonArr[2] = 1
         if (self.mode == 0 and not self.running_lidar):
             self.running_lidar = True
-            # startLidar()
+            print("Started Lidar recording")
         elif self.mode == 0 and self.running_lidar:
             self.running_lidar = False
-            # killLidar()
+            print("Stopped Lidar recording")
         if(self.mode == 5):
             playSongs(3)
         
