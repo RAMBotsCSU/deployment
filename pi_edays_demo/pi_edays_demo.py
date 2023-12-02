@@ -618,7 +618,7 @@ fifo_path = "/tmp/my_fifo"
 
 # Create a named pipe (FIFO)
 if not os.path.exists(fifo_path):
-    os.mkfifo(fifo_path)
+    os.mkdir(fifo_path)
 
 # Open the FIFO for writing
 fifo_write = open(fifo_path, "w")
