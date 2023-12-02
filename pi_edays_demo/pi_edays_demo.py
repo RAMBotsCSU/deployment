@@ -424,6 +424,7 @@ def lidar_thread_funct(controller):
                 csv_writer = csv.writer(csvfile)
                 csv_writer.writerows(lidar_data)
             print(f'Lidar data saved to {output_file}')
+            lidar_data = []
 
 
 
