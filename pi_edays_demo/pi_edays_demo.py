@@ -675,15 +675,6 @@ class MyController(Controller):
 
 print("hello world")
 
-fifo_path = "/tmp/my_fifo"
-
-# Create a named pipe (FIFO)
-if not os.path.exists(fifo_path):
-    os.mkdir(fifo_path)
-
-# Open the FIFO for writing
-fifo_write = open(fifo_path, "w")
-
 try:
     ser = serial.Serial('/dev/ttyACM0',9600)
 except SerialException as e:
