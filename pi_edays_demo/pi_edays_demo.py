@@ -15,7 +15,6 @@ import random
 from serial.serialutil import SerialException
 import PySimpleGUI as sg
 import signal
-# import re
 
 sg.theme('DarkGreen2')
 
@@ -55,15 +54,6 @@ tab1_layout = [
 layout = [tab1_layout]    
 
 window = sg.Window('RamBOTs', layout, size=(800, 420)) 
-
-fifo_path = "/tmp/my_fifo"
-
-# Create a named pipe (FIFO)
-if not os.path.exists(fifo_path):
-    os.mkfifo(fifo_path)
-
-# Open the FIFO for writing
-fifo_write = open(fifo_path, "w")
 
 
 mixer.init()
@@ -623,6 +613,16 @@ class MyController(Controller):
 
 
 print("hello world")
+
+fifo_path = "/tmp/my_fifo"
+
+# Create a named pipe (FIFO)
+if not os.path.exists(fifo_path):
+    os.mkfifo(fifo_path)
+
+# Open the FIFO for writing
+fifo_write = open(fifo_path, "w")
+
 try:
     ser = serial.Serial('/dev/ttyACM0',9600)
 except SerialException as e:
