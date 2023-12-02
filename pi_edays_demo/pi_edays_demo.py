@@ -393,7 +393,7 @@ def lidar_thread_funct(controller):
     max_distance = 0
 
     def process_data(data):
-        global max_distance
+        nonlocal max_distance
         lcd.fill((0,0,0))
         # Initialize a list to store Lidar data
         processed_data = []
