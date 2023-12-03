@@ -18,6 +18,12 @@ import signal
 from math import cos, sin, pi
 import csv
 from adafruit_rplidar import RPLidar
+import queue
+from tensorflow.keras.models import load_model
+from sklearn.preprocessing import MinMaxScaler
+
+shared_queue = queue.Queue()
+lidar_view = []
 
 sg.theme('DarkGreen2')
 
@@ -316,6 +322,7 @@ def serial_read_write(string): # use time library to call every 10 ms in separat
 
 def driver_thread_funct(controller):
     #Create variables
+    lidar_model = load_model('machine_learning/lidar_model.keras')
     pygame.mixer.Sound.play(random.choice([startup1]*19 + [startup2]*1)) # dont mind this line
     runningMode = 0
     joystickArr = [0.000, 0.000, 0.000, 0.000, 0.000, 0.000]
@@ -336,6 +343,15 @@ def driver_thread_funct(controller):
         joystickArr[4] = joystick_map_to_range(controller.r3_vertical)+1
         joystickArr[5] = trigger_map_to_range(controller.triggerR)+1
 
+        if controller.running_lidar:
+            lidar_view = shared_queue.get()
+            scaler_X = MinMaxScaler()
+            normalized_lidar_view = scaler_X.fit_transform(lidar_view)
+            prediction = lidar_model.predict(normalized_lidar_view)
+            joystickArr = prediction
+            print("Joystick inferred: ", joystickArr)
+
+
 
         serial_read_write(''',{0:.3f},{1:.3f},{2:.3f},{3:.3f},{4:.3f},{5:.3f},M:{6},LD:{7},RD:{8},UD:{9},DD:{10},Sq:{11},Tr:{12},Ci:{13},Xx:{14},Sh:{15},Op:{16},Ps:{17},L3:{18},R3:{19}'''
         .format(joystickArr[0], joystickArr[1], joystickArr[2], joystickArr[3], joystickArr[4], joystickArr[5],
@@ -349,7 +365,7 @@ def driver_thread_funct(controller):
         #update_gui_table_controller(controller)
 
 def lidar_thread_funct(controller):
-
+    global lidar_view
     # Set up pygame and the display
     os.putenv('SDL_FBDEV', '/dev/fb1')
     pygame.init()
@@ -409,7 +425,8 @@ def lidar_thread_funct(controller):
 
             if time.time() - start_time > .2:
                 start_time = time.time()
-                # lidar_data.append(scan_data)
+                lidar_view = process_data(scan_data)
+                shared_queue.put(lidar_view)
 
                 joystickArr[0] = joystick_map_to_range(controller.l3_horizontal)+1
                 joystickArr[1] = joystick_map_to_range(controller.l3_vertical)+1
@@ -418,7 +435,7 @@ def lidar_thread_funct(controller):
                 joystickArr[4] = joystick_map_to_range(controller.r3_vertical)+1
                 joystickArr[5] = trigger_map_to_range(controller.triggerR)+1
 
-                lidar_data.append(process_data(scan_data) + joystickArr)
+                lidar_data.append(lidar_view + joystickArr)
                 print('Data written to csv: ', joystickArr)
         elif len(lidar_data) > 0:
             with open(output_file, 'w', newline='') as csvfile:
