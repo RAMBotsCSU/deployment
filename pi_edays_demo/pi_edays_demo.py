@@ -19,7 +19,8 @@ from math import cos, sin, pi
 import csv
 from adafruit_rplidar import RPLidar
 import queue
-import tflite_runtime.interpreter as tflite
+# import tflite_runtime.interpreter as tflite
+from pycoral.utils import edgetpu
 from sklearn.preprocessing import MinMaxScaler
 
 shared_queue = queue.Queue()
@@ -157,6 +158,15 @@ mode_sounds = [walkMode,walkAlternate,pushUpsMode,pushUpsAlternate,legControlMod
 songs = [song1,song2,song3,song4]
 
 slider_value = slider_default
+
+def load_model(model_path):
+    r"""Load TFLite model, returns a Interpreter instance."""
+    
+    #interpreter = tflite.Interpreter(model_path=model_path,experimental_delegates=[tflite.load_delegate('libedgetpu.so.1')])
+    interpreter = edgetpu.make_interpreter(model_path, device = 'usb')
+    print('got here')
+    interpreter.allocate_tensors()
+    return interpreter
 
 def gui_handler(controller,window): # manage the GUI
 
@@ -322,8 +332,7 @@ def serial_read_write(string): # use time library to call every 10 ms in separat
 
 def driver_thread_funct(controller):
     #Create variables
-    interpreter = tflite.Interpreter(model_path="machine_learning/lidar_model.tflite")
-    interpreter.allocate_tensors()
+    interpreter = load_model("machine_learning/lidar_model.tflite")
     # # Get input and output details
     input_details = interpreter.get_input_details()
     output_details = interpreter.get_output_details()
