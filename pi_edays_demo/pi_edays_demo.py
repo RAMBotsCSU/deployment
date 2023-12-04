@@ -349,6 +349,7 @@ def driver_thread_funct(controller):
         joystickArr[5] = trigger_map_to_range(controller.triggerR)+1
 
         if controller.running_lidar:
+            print("Running lidar inference")
             lidar_view = shared_queue.get()
             scaler_X = MinMaxScaler()
             normalized_lidar_view = scaler_X.fit_transform(lidar_view)
