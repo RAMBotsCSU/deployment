@@ -19,7 +19,7 @@ from math import cos, sin, pi
 import csv
 from adafruit_rplidar import RPLidar
 import queue
-from tensorflow.keras.models import load_model
+import tflite_runtime.interpreter as tflite
 from sklearn.preprocessing import MinMaxScaler
 
 shared_queue = queue.Queue()
@@ -322,7 +322,12 @@ def serial_read_write(string): # use time library to call every 10 ms in separat
 
 def driver_thread_funct(controller):
     #Create variables
-    lidar_model = load_model('machine_learning/lidar_model.keras')
+    interpreter = tflite.Interpreter(model_path="machine_learning/lidar_model.tflite")
+    interpreter.allocate_tensors()
+    # Get input and output details
+    input_details = interpreter.get_input_details()
+    output_details = interpreter.get_output_details()
+
     pygame.mixer.Sound.play(random.choice([startup1]*19 + [startup2]*1)) # dont mind this line
     runningMode = 0
     joystickArr = [0.000, 0.000, 0.000, 0.000, 0.000, 0.000]
@@ -347,8 +352,15 @@ def driver_thread_funct(controller):
             lidar_view = shared_queue.get()
             scaler_X = MinMaxScaler()
             normalized_lidar_view = scaler_X.fit_transform(lidar_view)
-            prediction = lidar_model.predict(normalized_lidar_view)
-            joystickArr = prediction
+
+            # Set input tensor data
+            interpreter.set_tensor(input_details[0]['index'], normalized_lidar_view)
+            # Run inference
+            interpreter.invoke()
+            # Get output tensor data
+            output_data = interpreter.get_tensor(output_details[0]['index'])
+
+            joystickArr = output_data
             print("Joystick inferred: ", joystickArr)
 
 
