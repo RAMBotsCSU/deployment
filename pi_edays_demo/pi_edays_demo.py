@@ -322,11 +322,11 @@ def serial_read_write(string): # use time library to call every 10 ms in separat
 
 def driver_thread_funct(controller):
     #Create variables
-    interpreter = tflite.Interpreter(model_path="../../machine_learning/lidar_model.tflite")
-    interpreter.allocate_tensors()
-    # Get input and output details
-    input_details = interpreter.get_input_details()
-    output_details = interpreter.get_output_details()
+    # interpreter = tflite.Interpreter(model_path="../../machine_learning/lidar_model.tflite")
+    # interpreter.allocate_tensors()
+    # # Get input and output details
+    # input_details = interpreter.get_input_details()
+    # output_details = interpreter.get_output_details()
 
     pygame.mixer.Sound.play(random.choice([startup1]*19 + [startup2]*1)) # dont mind this line
     runningMode = 0
@@ -348,21 +348,21 @@ def driver_thread_funct(controller):
         joystickArr[4] = joystick_map_to_range(controller.r3_vertical)+1
         joystickArr[5] = trigger_map_to_range(controller.triggerR)+1
 
-        if controller.running_lidar:
-            print("Running lidar inference")
-            lidar_view = shared_queue.get()
-            scaler_X = MinMaxScaler()
-            normalized_lidar_view = scaler_X.fit_transform(lidar_view)
+        # if controller.running_lidar:
+        #     print("Running lidar inference")
+        #     lidar_view = shared_queue.get()
+        #     scaler_X = MinMaxScaler()
+        #     normalized_lidar_view = scaler_X.fit_transform(lidar_view)
 
-            # Set input tensor data
-            interpreter.set_tensor(input_details[0]['index'], normalized_lidar_view)
-            # Run inference
-            interpreter.invoke()
-            # Get output tensor data
-            output_data = interpreter.get_tensor(output_details[0]['index'])
+        #     # Set input tensor data
+        #     interpreter.set_tensor(input_details[0]['index'], normalized_lidar_view)
+        #     # Run inference
+        #     interpreter.invoke()
+        #     # Get output tensor data
+        #     output_data = interpreter.get_tensor(output_details[0]['index'])
 
-            joystickArr = output_data
-            print("Joystick inferred: ", joystickArr)
+        #     joystickArr = output_data
+        #     print("Joystick inferred: ", joystickArr)
 
 
 
