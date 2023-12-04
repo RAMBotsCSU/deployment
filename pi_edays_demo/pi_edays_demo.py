@@ -322,11 +322,12 @@ def serial_read_write(string): # use time library to call every 10 ms in separat
 
 def driver_thread_funct(controller):
     #Create variables
-    # interpreter = tflite.Interpreter(model_path="../../machine_learning/lidar_model.tflite")
-    # interpreter.allocate_tensors()
+    interpreter = tflite.Interpreter(model_path="../../machine_learning/lidar_model.tflite")
+    interpreter.allocate_tensors()
     # # Get input and output details
-    # input_details = interpreter.get_input_details()
-    # output_details = interpreter.get_output_details()
+    input_details = interpreter.get_input_details()
+    output_details = interpreter.get_output_details()
+    print("Running lidar model")
 
     pygame.mixer.Sound.play(random.choice([startup1]*19 + [startup2]*1)) # dont mind this line
     runningMode = 0
