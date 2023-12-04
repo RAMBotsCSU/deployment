@@ -322,7 +322,7 @@ def serial_read_write(string): # use time library to call every 10 ms in separat
 
 def driver_thread_funct(controller):
     #Create variables
-    interpreter = tflite.Interpreter(model_path="machine_learning/lidar_model.tflite")
+    interpreter = tflite.Interpreter(model_path="../../machine_learning/lidar_model.tflite")
     interpreter.allocate_tensors()
     # Get input and output details
     input_details = interpreter.get_input_details()
