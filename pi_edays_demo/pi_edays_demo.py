@@ -479,10 +479,10 @@ def lidar_thread_funct(controller):
                 # lidar_view = shared_queue.get()
                 print(len(lidar_view))
                 if len(lidar_view) == 360:
-                    lidar_data = np.array(lidar_view, dtype=np.float32)
-                    lidar_data = lidar_data.reshape(1, -1)
+                    lidar_data2 = np.array(lidar_view, dtype=np.float32)
+                    lidar_data2 = lidar_data2.reshape(1, -1)
                     scaler_X = MinMaxScaler()
-                    normalized_lidar_view = scaler_X.fit_transform(lidar_data)
+                    normalized_lidar_view = scaler_X.fit_transform(lidar_data2)
 
                     # Set input tensor data
                     input_tensor = interpreter.tensor(interpreter.get_input_details()[0]['index'])
