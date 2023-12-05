@@ -222,6 +222,35 @@ def killML():
         processML.wait()
 
 
+def runLidarInference(lidar_view):
+    if len(lidar_view) == 360:
+        print("Running lidar inference")
+        lidar_data2 = np.array(lidar_view, dtype=np.float32)
+        lidar_data2 = lidar_data2.reshape(1, -1)
+        scaler_X = MinMaxScaler()
+        normalized_lidar_view = scaler_X.fit_transform(lidar_data2)
+
+        # Set input tensor data
+        input_tensor = interpreter.tensor(interpreter.get_input_details()[0]['index'])
+        input_tensor()[0] = normalized_lidar_view
+
+        # Run inference
+        interpreter.invoke()
+
+        # Get the output tensor
+        output_tensor = interpreter.tensor(output_details[0]['index'])
+        # Get the output values as a NumPy array
+        output_values = np.array(output_tensor()).reshape(1, -1).tolist()[0]
+
+
+        # joystickArr = output_values
+        print("Joystick inferred: ", joystickArr)
+        shared_queue.put(output_values)
+        print('Data written to csv: ', joystickArr)
+    else:
+        print("lidar view data incorrect")
+
+
 def playModeSounds(mode):
     stopSounds()
     if mode == 0:
@@ -353,31 +382,10 @@ def driver_thread_funct(controller):
         joystickArr[5] = trigger_map_to_range(controller.triggerR)+1
 
         if controller.running_lidar:
-            print("Running lidar inference")
-            output_values = shared_queue.get()
-            print(len(output_values))
-            joystickArr = output_values
-            # if len(lidar_view) == 360:
-            #     lidar_data = np.array(lidar_view, dtype=np.float32)
-            #     lidar_data = lidar_data.reshape(1, -1)
-            #     scaler_X = MinMaxScaler()
-            #     normalized_lidar_view = scaler_X.fit_transform(lidar_data)
-
-            #     # Set input tensor data
-            #     input_tensor = interpreter.tensor(interpreter.get_input_details()[0]['index'])
-            #     input_tensor()[0] = normalized_lidar_view
-
-            #     # Run inference
-            #     interpreter.invoke()
-
-            #     # Get the output tensor
-            #     output_tensor = interpreter.tensor(output_details[0]['index'])
-            #     # Get the output values as a NumPy array
-            #     output_values = np.array(output_tensor()).reshape(1, -1).tolist()[0]
-
-
-                
-            #     print("Joystick inferred: ", joystickArr)
+            print("Running lidar")
+            # output_values = shared_queue.get()
+            # print(len(output_values))
+            # joystickArr = output_values
 
 
 
@@ -475,32 +483,6 @@ def lidar_thread_funct(controller):
 
                 lidar_data.append(lidar_view + joystickArr)
 
-                print("Running lidar inference")
-                # lidar_view = shared_queue.get()
-                print(len(lidar_view))
-                if len(lidar_view) == 360:
-                    lidar_data2 = np.array(lidar_view, dtype=np.float32)
-                    lidar_data2 = lidar_data2.reshape(1, -1)
-                    scaler_X = MinMaxScaler()
-                    normalized_lidar_view = scaler_X.fit_transform(lidar_data2)
-
-                    # Set input tensor data
-                    input_tensor = interpreter.tensor(interpreter.get_input_details()[0]['index'])
-                    input_tensor()[0] = normalized_lidar_view
-
-                    # Run inference
-                    interpreter.invoke()
-
-                    # Get the output tensor
-                    output_tensor = interpreter.tensor(output_details[0]['index'])
-                    # Get the output values as a NumPy array
-                    output_values = np.array(output_tensor()).reshape(1, -1).tolist()[0]
-
-
-                    # joystickArr = output_values
-                    print("Joystick inferred: ", joystickArr)
-                    shared_queue.put(output_values)
-                    # print('Data written to csv: ', joystickArr)
         elif len(lidar_data) > 0:
             with open(output_file, 'w', newline='') as csvfile:
                 csv_writer = csv.writer(csvfile)
