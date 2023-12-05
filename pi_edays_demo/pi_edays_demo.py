@@ -19,8 +19,8 @@ from math import cos, sin, pi
 import csv
 from adafruit_rplidar import RPLidar
 import queue
-# import tflite_runtime.interpreter as tflite
 from pycoral.utils import edgetpu
+import numpy as np
 from sklearn.preprocessing import MinMaxScaler
 
 shared_queue = queue.Queue()
@@ -332,7 +332,10 @@ def serial_read_write(string): # use time library to call every 10 ms in separat
 
 def driver_thread_funct(controller):
     #Create variables
-    interpreter = load_model("machine_learning/lidar_model.tflite")
+    model_path = 'machine_learning/lidar_model_quantized_edgetpu.tflite'
+    interpreter = edgetpu.make_interpreter(model_path, device='usb')
+    interpreter.allocate_tensors()
+
     # # Get input and output details
     input_details = interpreter.get_input_details()
     output_details = interpreter.get_output_details()
@@ -358,21 +361,29 @@ def driver_thread_funct(controller):
         joystickArr[4] = joystick_map_to_range(controller.r3_vertical)+1
         joystickArr[5] = trigger_map_to_range(controller.triggerR)+1
 
-        # if controller.running_lidar:
-        #     print("Running lidar inference")
-        #     lidar_view = shared_queue.get()
-        #     scaler_X = MinMaxScaler()
-        #     normalized_lidar_view = scaler_X.fit_transform(lidar_view)
+        if controller.running_lidar:
+            print("Running lidar inference")
+            lidar_view = shared_queue.get()
+            if len(lidar_view) == 360:
+                lidar_data = np.array(lidar_view, dtype=np.float32)
+                lidar_data = lidar_data.reshape(1, -1)
+                scaler_X = MinMaxScaler()
+                normalized_lidar_view = scaler_X.fit_transform(lidar_data)
 
-        #     # Set input tensor data
-        #     interpreter.set_tensor(input_details[0]['index'], normalized_lidar_view)
-        #     # Run inference
-        #     interpreter.invoke()
-        #     # Get output tensor data
-        #     output_data = interpreter.get_tensor(output_details[0]['index'])
+                # Set input tensor data
+                input_tensor = interpreter.tensor(interpreter.get_input_details()[0]['index'])
+                input_tensor()[0] = normalized_lidar_view
 
-        #     joystickArr = output_data
-        #     print("Joystick inferred: ", joystickArr)
+                # Run inference
+                interpreter.invoke()
+
+                # Get the output tensor
+                output_tensor = interpreter.tensor(output_details[0]['index'])
+                # Get the output values as a NumPy array
+                output_values = np.array(output_tensor())
+
+                joystickArr = output_values
+                print("Joystick inferred: ", joystickArr)
 
 
 
