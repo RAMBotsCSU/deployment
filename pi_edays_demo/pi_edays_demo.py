@@ -381,7 +381,8 @@ def driver_thread_funct(controller):
                 # Get the output tensor
                 output_tensor = interpreter.tensor(output_details[0]['index'])
                 # Get the output values as a NumPy array
-                output_values = np.array(output_tensor())
+                output_values = np.array(output_tensor()).reshape(1, -1).tolist()[0]
+
 
                 joystickArr = output_values
                 print("Joystick inferred: ", joystickArr)
