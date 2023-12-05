@@ -331,15 +331,6 @@ def serial_read_write(string): # use time library to call every 10 ms in separat
     return
 
 def driver_thread_funct(controller):
-    #Create variables
-    model_path = 'machine_learning/lidar_model_quantized_edgetpu.tflite'
-    interpreter = edgetpu.make_interpreter(model_path, device='usb')
-    interpreter.allocate_tensors()
-
-    # # Get input and output details
-    input_details = interpreter.get_input_details()
-    output_details = interpreter.get_output_details()
-    print("Running lidar model")
 
     pygame.mixer.Sound.play(random.choice([startup1]*19 + [startup2]*1)) # dont mind this line
     runningMode = 0
@@ -363,29 +354,30 @@ def driver_thread_funct(controller):
 
         if controller.running_lidar:
             print("Running lidar inference")
-            lidar_view = shared_queue.get()
-            print(len(lidar_view))
-            if len(lidar_view) == 360:
-                lidar_data = np.array(lidar_view, dtype=np.float32)
-                lidar_data = lidar_data.reshape(1, -1)
-                scaler_X = MinMaxScaler()
-                normalized_lidar_view = scaler_X.fit_transform(lidar_data)
+            output_values = shared_queue.get()
+            print(len(output_values))
+            joystickArr = output_values
+            # if len(lidar_view) == 360:
+            #     lidar_data = np.array(lidar_view, dtype=np.float32)
+            #     lidar_data = lidar_data.reshape(1, -1)
+            #     scaler_X = MinMaxScaler()
+            #     normalized_lidar_view = scaler_X.fit_transform(lidar_data)
 
-                # Set input tensor data
-                input_tensor = interpreter.tensor(interpreter.get_input_details()[0]['index'])
-                input_tensor()[0] = normalized_lidar_view
+            #     # Set input tensor data
+            #     input_tensor = interpreter.tensor(interpreter.get_input_details()[0]['index'])
+            #     input_tensor()[0] = normalized_lidar_view
 
-                # Run inference
-                interpreter.invoke()
+            #     # Run inference
+            #     interpreter.invoke()
 
-                # Get the output tensor
-                output_tensor = interpreter.tensor(output_details[0]['index'])
-                # Get the output values as a NumPy array
-                output_values = np.array(output_tensor()).reshape(1, -1).tolist()[0]
+            #     # Get the output tensor
+            #     output_tensor = interpreter.tensor(output_details[0]['index'])
+            #     # Get the output values as a NumPy array
+            #     output_values = np.array(output_tensor()).reshape(1, -1).tolist()[0]
 
 
-                joystickArr = output_values
-                print("Joystick inferred: ", joystickArr)
+                
+            #     print("Joystick inferred: ", joystickArr)
 
 
 
@@ -409,6 +401,16 @@ def lidar_thread_funct(controller):
     # pygame.mouse.set_visible(False)
     lcd.fill((0,0,0))
     pygame.display.update()
+
+    #Create variables
+    model_path = 'machine_learning/lidar_model_quantized_edgetpu.tflite'
+    interpreter = edgetpu.make_interpreter(model_path, device='usb')
+    interpreter.allocate_tensors()
+
+    # # Get input and output details
+    input_details = interpreter.get_input_details()
+    output_details = interpreter.get_output_details()
+    print("Running lidar model")
 
 
     # CSV file name
@@ -462,7 +464,7 @@ def lidar_thread_funct(controller):
             if time.time() - start_time > .2:
                 start_time = time.time()
                 lidar_view = process_data(scan_data)
-                shared_queue.put(lidar_view)
+                # shared_queue.put(lidar_view)
 
                 joystickArr[0] = joystick_map_to_range(controller.l3_horizontal)+1
                 joystickArr[1] = joystick_map_to_range(controller.l3_vertical)+1
@@ -472,7 +474,33 @@ def lidar_thread_funct(controller):
                 joystickArr[5] = trigger_map_to_range(controller.triggerR)+1
 
                 lidar_data.append(lidar_view + joystickArr)
-                # print('Data written to csv: ', joystickArr)
+
+                print("Running lidar inference")
+                # lidar_view = shared_queue.get()
+                print(len(lidar_view))
+                if len(lidar_view) == 360:
+                    lidar_data = np.array(lidar_view, dtype=np.float32)
+                    lidar_data = lidar_data.reshape(1, -1)
+                    scaler_X = MinMaxScaler()
+                    normalized_lidar_view = scaler_X.fit_transform(lidar_data)
+
+                    # Set input tensor data
+                    input_tensor = interpreter.tensor(interpreter.get_input_details()[0]['index'])
+                    input_tensor()[0] = normalized_lidar_view
+
+                    # Run inference
+                    interpreter.invoke()
+
+                    # Get the output tensor
+                    output_tensor = interpreter.tensor(output_details[0]['index'])
+                    # Get the output values as a NumPy array
+                    output_values = np.array(output_tensor()).reshape(1, -1).tolist()[0]
+
+
+                    # joystickArr = output_values
+                    print("Joystick inferred: ", joystickArr)
+                    shared_queue.put(output_values)
+                    # print('Data written to csv: ', joystickArr)
         elif len(lidar_data) > 0:
             with open(output_file, 'w', newline='') as csvfile:
                 csv_writer = csv.writer(csvfile)
