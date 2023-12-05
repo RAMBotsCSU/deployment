@@ -364,6 +364,7 @@ def driver_thread_funct(controller):
         if controller.running_lidar:
             print("Running lidar inference")
             lidar_view = shared_queue.get()
+            print(len(lidar_view))
             if len(lidar_view) == 360:
                 lidar_data = np.array(lidar_view, dtype=np.float32)
                 lidar_data = lidar_data.reshape(1, -1)
@@ -470,7 +471,7 @@ def lidar_thread_funct(controller):
                 joystickArr[5] = trigger_map_to_range(controller.triggerR)+1
 
                 lidar_data.append(lidar_view + joystickArr)
-                print('Data written to csv: ', joystickArr)
+                # print('Data written to csv: ', joystickArr)
         elif len(lidar_data) > 0:
             with open(output_file, 'w', newline='') as csvfile:
                 csv_writer = csv.writer(csvfile)
