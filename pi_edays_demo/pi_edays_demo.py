@@ -159,15 +159,6 @@ songs = [song1,song2,song3,song4]
 
 slider_value = slider_default
 
-def load_model(model_path):
-    r"""Load TFLite model, returns a Interpreter instance."""
-    
-    #interpreter = tflite.Interpreter(model_path=model_path,experimental_delegates=[tflite.load_delegate('libedgetpu.so.1')])
-    interpreter = edgetpu.make_interpreter(model_path, device = 'usb')
-    print('got here')
-    interpreter.allocate_tensors()
-    return interpreter
-
 def gui_handler(controller,window): # manage the GUI
 
     print("hello from gui")
@@ -222,31 +213,46 @@ def killML():
         processML.wait()
 
 
-def runLidarInference(lidar_view):
-    if len(lidar_view) == 360:
+def postprocess_prediction(output_values):
+    dequantized_prediction = (output_values.astype(np.float32) / 255.0).reshape(1, -1)
+    prediction_reversed = dequantized_prediction * 2
+    return prediction_reversed
+
+def preprocess_lidar_data(lidar_data):
+    lidar_max_value = 12000
+    uint8_max_value = 255
+
+    # Normalize the output labels to the range [0, 1]
+    data_normalized = lidar_data / lidar_max_value
+    data_mapped = (data_normalized * uint8_max_value).astype(np.uint8)
+    return data_mapped
+
+def runLidarInference(lidar_data, interpreter):
+    if len(lidar_data) == 360:
         print("Running lidar inference")
-        lidar_data2 = np.array(lidar_view, dtype=np.float32)
-        lidar_data2 = lidar_data2.reshape(1, -1)
-        scaler_X = MinMaxScaler()
-        normalized_lidar_view = scaler_X.fit_transform(lidar_data2)
+        # Get input and output details
+        input_details = interpreter.get_input_details()
+        output_details = interpreter.get_output_details()
+
+        lidar_data = np.array(lidar_data)
+        
+        lidar_data_processed = preprocess_lidar_data(lidar_data)
 
         # Set input tensor data
-        input_tensor = interpreter.tensor(interpreter.get_input_details()[0]['index'])
-        input_tensor()[0] = normalized_lidar_view
+        input_tensor = interpreter.tensor(input_details[0]['index'])
+        input_tensor()[0] = lidar_data_processed
 
         # Run inference
         interpreter.invoke()
 
         # Get the output tensor
         output_tensor = interpreter.tensor(output_details[0]['index'])
+
         # Get the output values as a NumPy array
-        output_values = np.array(output_tensor()).reshape(1, -1).tolist()[0]
+        output_values = np.array(output_tensor())
+        output_values = postprocess_prediction(output_values)
 
-
-        # joystickArr = output_values
-        print("Joystick inferred: ", joystickArr)
         shared_queue.put(output_values)
-        print('Data written to csv: ', joystickArr)
     else:
         print("lidar view data incorrect")
 
@@ -382,10 +388,9 @@ def driver_thread_funct(controller):
         joystickArr[5] = trigger_map_to_range(controller.triggerR)+1
 
         if controller.running_lidar:
-            print("Running lidar")
-            # output_values = shared_queue.get()
-            # print(len(output_values))
-            # joystickArr = output_values
+            inferred_values = shared_queue.get()
+            print("Running lidar:", inferred_values)
+            joystickArr = inferred_values
 
 
 
@@ -415,10 +420,6 @@ def lidar_thread_funct(controller):
     interpreter = edgetpu.make_interpreter(model_path, device='usb')
     interpreter.allocate_tensors()
 
-    # # Get input and output details
-    input_details = interpreter.get_input_details()
-    output_details = interpreter.get_output_details()
-    print("Running lidar model")
 
 
     # CSV file name
@@ -429,7 +430,7 @@ def lidar_thread_funct(controller):
     while True:
         try:
             lidar = RPLidar(None, PORT_NAME, timeout=10)
-            print(lidar.info)
+            print("Lidar connected", lidar.info)
             break
         except:
             print("Error connecting to lidar. Trying again")
@@ -472,7 +473,8 @@ def lidar_thread_funct(controller):
             if time.time() - start_time > .2:
                 start_time = time.time()
                 lidar_view = process_data(scan_data)
-                # shared_queue.put(lidar_view)
+
+                runLidarInference(lidar_view, interpreter)
 
                 joystickArr[0] = joystick_map_to_range(controller.l3_horizontal)+1
                 joystickArr[1] = joystick_map_to_range(controller.l3_vertical)+1
