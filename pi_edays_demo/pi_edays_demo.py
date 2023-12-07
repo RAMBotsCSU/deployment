@@ -389,10 +389,14 @@ def driver_thread_funct(controller):
 
         if controller.running_lidar:
             inferred_values = shared_queue.get()
-            print("Running lidar:", inferred_values[0])
-            joystickArr = inferred_values[0]
+            index = 0
+            for val in inferred_values[0]:
+                joystickArr[index] = val
+                index += 1
 
+            # joystickArr = inferred_values[0]
 
+        print("Joystick values:", joystickArr)
 
         serial_read_write(''',{0:.3f},{1:.3f},{2:.3f},{3:.3f},{4:.3f},{5:.3f},M:{6},LD:{7},RD:{8},UD:{9},DD:{10},Sq:{11},Tr:{12},Ci:{13},Xx:{14},Sh:{15},Op:{16},Ps:{17},L3:{18},R3:{19}'''
         .format(joystickArr[0], joystickArr[1], joystickArr[2], joystickArr[3], joystickArr[4], joystickArr[5],
