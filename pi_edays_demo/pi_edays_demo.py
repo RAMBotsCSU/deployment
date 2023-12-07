@@ -372,7 +372,7 @@ def driver_thread_funct(controller):
     joystickArr = [0.000, 0.000, 0.000, 0.000, 0.000, 0.000]
     rgb(0)
     gui_update_counter = 0
-    inferred_values = [1.000, 1.000, 1.000, 1.000, 1.000, 1.000]
+    inferred_values = [[1.000, 1.000, 1.000, 1.000, 1.000, 1.000]]
     
     #running section
     while True:
