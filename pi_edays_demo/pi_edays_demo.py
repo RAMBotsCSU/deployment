@@ -389,8 +389,8 @@ def driver_thread_funct(controller):
 
         if controller.running_lidar:
             inferred_values = shared_queue.get()
-            print("Running lidar:", inferred_values)
-            joystickArr = inferred_values
+            print("Running lidar:", inferred_values[0])
+            joystickArr = inferred_values[0]
 
 
 
