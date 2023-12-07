@@ -372,6 +372,7 @@ def driver_thread_funct(controller):
     joystickArr = [0.000, 0.000, 0.000, 0.000, 0.000, 0.000]
     rgb(0)
     gui_update_counter = 0
+    inferred_values = [1.000, 1.000, 1.000, 1.000, 1.000, 1.000]
     
     #running section
     while True:
@@ -388,7 +389,9 @@ def driver_thread_funct(controller):
         joystickArr[5] = trigger_map_to_range(controller.triggerR)+1
 
         if controller.running_lidar:
-            inferred_values = shared_queue.get()
+            if not shared_queue.empty():
+                inferred_values = shared_queue.get()
+            
             index = 0
             for val in inferred_values[0]:
                 joystickArr[index] = val
