@@ -14,7 +14,17 @@ from pygame import mixer
 import random
 from serial.serialutil import SerialException
 import PySimpleGUI as sg
-import re
+import signal
+from math import cos, sin, pi
+import csv
+from adafruit_rplidar import RPLidar
+import queue
+from pycoral.utils import edgetpu
+import numpy as np
+from sklearn.preprocessing import MinMaxScaler
+
+shared_queue = queue.Queue()
+lidar_view = []
 
 sg.theme('DarkGreen2')
 
@@ -185,22 +195,66 @@ def gui_table_handler(controller): # update the GUI table with controller inputs
 
 
 
-process = None
+processML = None
 
 def startML():
     pygame.mixer.Sound.play(startMLSound)
-    global process
+    global processML
     print("starting machine learning!")
-    process = subprocess.Popen(['python3', 'machine_learning/Object_Detection.py','--geometry', '800x600+100+100'])
+    processML = subprocess.Popen(['python3', 'machine_learning/Object_Detection.py','--geometry', '800x600+100+100'])
 
 
 def killML():
     pygame.mixer.Sound.play(stopMLSound)
-    global process
-    if process:
+    global processML
+    if processML:
         print("killing machine learning.")
-        process.terminate()
-        process.wait()
+        processML.terminate()
+        processML.wait()
+
+
+def postprocess_prediction(output_values):
+    dequantized_prediction = (output_values.astype(np.float32) / 255.0).reshape(1, -1)
+    prediction_reversed = dequantized_prediction * 2
+    return prediction_reversed
+
+def preprocess_lidar_data(lidar_data):
+    lidar_max_value = 12000
+    uint8_max_value = 255
+
+    # Normalize the output labels to the range [0, 1]
+    data_normalized = lidar_data / lidar_max_value
+    data_mapped = (data_normalized * uint8_max_value).astype(np.uint8)
+    return data_mapped
+
+def runLidarInference(lidar_data, interpreter):
+    if len(lidar_data) == 360:
+        print("Running lidar inference")
+        # Get input and output details
+        input_details = interpreter.get_input_details()
+        output_details = interpreter.get_output_details()
+
+        lidar_data = np.array(lidar_data)
+        
+        lidar_data_processed = preprocess_lidar_data(lidar_data)
+
+        # Set input tensor data
+        input_tensor = interpreter.tensor(input_details[0]['index'])
+        input_tensor()[0] = lidar_data_processed
+
+        # Run inference
+        interpreter.invoke()
+
+        # Get the output tensor
+        output_tensor = interpreter.tensor(output_details[0]['index'])
+
+        # Get the output values as a NumPy array
+        output_values = np.array(output_tensor())
+        output_values = postprocess_prediction(output_values)
+
+        shared_queue.put(output_values)
+    else:
+        print("lidar view data incorrect")
 
 
 def playModeSounds(mode):
@@ -312,12 +366,13 @@ def serial_read_write(string): # use time library to call every 10 ms in separat
     return
 
 def driver_thread_funct(controller):
-    #Create variables
+
     pygame.mixer.Sound.play(random.choice([startup1]*19 + [startup2]*1)) # dont mind this line
     runningMode = 0
     joystickArr = [0.000, 0.000, 0.000, 0.000, 0.000, 0.000]
     rgb(0)
     gui_update_counter = 0
+    inferred_values = [[1.000, 1.000, 1.000, 1.000, 1.000, 1.000]]
     
     #running section
     while True:
@@ -333,6 +388,18 @@ def driver_thread_funct(controller):
         joystickArr[4] = joystick_map_to_range(controller.r3_vertical)+1
         joystickArr[5] = trigger_map_to_range(controller.triggerR)+1
 
+        if controller.running_lidar:
+            if not shared_queue.empty():
+                inferred_values = shared_queue.get()
+            
+            index = 0
+            for val in inferred_values[0]:
+                joystickArr[index] = val
+                index += 1
+
+            # joystickArr = inferred_values[0]
+
+        print("Joystick values:", joystickArr)
 
         serial_read_write(''',{0:.3f},{1:.3f},{2:.3f},{3:.3f},{4:.3f},{5:.3f},M:{6},LD:{7},RD:{8},UD:{9},DD:{10},Sq:{11},Tr:{12},Ci:{13},Xx:{14},Sh:{15},Op:{16},Ps:{17},L3:{18},R3:{19}'''
         .format(joystickArr[0], joystickArr[1], joystickArr[2], joystickArr[3], joystickArr[4], joystickArr[5],
@@ -344,6 +411,94 @@ def driver_thread_funct(controller):
                 
        # time.sleep(0.01)
         #update_gui_table_controller(controller)
+
+def lidar_thread_funct(controller):
+    global lidar_view
+    # Set up pygame and the display
+    os.putenv('SDL_FBDEV', '/dev/fb1')
+    pygame.init()
+    lcd = pygame.display.set_mode((320,240))
+    # pygame.mouse.set_visible(False)
+    lcd.fill((0,0,0))
+    pygame.display.update()
+
+    #Create variables
+    model_path = 'machine_learning/lidar_model_quantized_edgetpu.tflite'
+    interpreter = edgetpu.make_interpreter(model_path, device='usb')
+    interpreter.allocate_tensors()
+
+
+
+    # CSV file name
+    output_file = 'lidar_data.csv'
+
+    # Setup the RPLidar
+    PORT_NAME = '/dev/ttyUSB0'
+    while True:
+        try:
+            lidar = RPLidar(None, PORT_NAME, timeout=10)
+            print("Lidar connected", lidar.info)
+            break
+        except:
+            print("Error connecting to lidar. Trying again")
+
+    
+            
+    max_distance = 0
+
+    def process_data(data):
+        nonlocal max_distance
+        lcd.fill((0,0,0))
+        # Initialize a list to store Lidar data
+        processed_data = []
+        for angle in range(360):
+            distance = float(data[angle])
+            if distance > 0:                  # ignore initially ungathered data points
+                max_distance = max([min([5000, distance]), max_distance])
+                radians = angle * pi / 180.0
+                x = distance * cos(radians)
+                y = distance * sin(radians)
+                point = (160 + int(x / max_distance * 119), 120 + int(y / max_distance * 119))
+                lcd.set_at(point, pygame.Color(255, 255, 255))
+            processed_data.append(distance)
+        pygame.display.update()
+        return processed_data
+    
+    scan_data = [0] * 360
+    lidar_data = []
+    start_time = 0
+    joystickArr = [0.000, 0.000, 0.000, 0.000, 0.000, 0.000]
+
+    
+
+    for scan in lidar.iter_scans():
+        for (_, angle, distance) in scan:
+            scan_data[min([359, int(angle)])] = distance 
+
+        if controller.running_lidar:
+
+            if time.time() - start_time > .2:
+                start_time = time.time()
+                lidar_view = process_data(scan_data)
+
+                runLidarInference(lidar_view, interpreter)
+
+                joystickArr[0] = joystick_map_to_range(controller.l3_horizontal)+1
+                joystickArr[1] = joystick_map_to_range(controller.l3_vertical)+1
+                joystickArr[2] = trigger_map_to_range(controller.triggerL)+1
+                joystickArr[3] = joystick_map_to_range(controller.r3_horizontal)+1
+                joystickArr[4] = joystick_map_to_range(controller.r3_vertical)+1
+                joystickArr[5] = trigger_map_to_range(controller.triggerR)+1
+
+                lidar_data.append(lidar_view + joystickArr)
+
+        elif len(lidar_data) > 0:
+            with open(output_file, 'w', newline='') as csvfile:
+                csv_writer = csv.writer(csvfile)
+                csv_writer.writerows(lidar_data)
+            print(f'Lidar data saved to {output_file}')
+            lidar_data = []
+
 
 
 class MyController(Controller):
@@ -365,6 +520,7 @@ class MyController(Controller):
         self.pauseChangeFlag = True
         self.deadzone = 32767/10
         self.running_ML = False
+        self.running_lidar = False
 
     def on_L3_up(self, value):
         if (abs(value) > self.deadzone):
@@ -477,6 +633,12 @@ class MyController(Controller):
         
     def on_circle_press(self):
         self.shapeButtonArr[2] = 1
+        if (self.mode == 0 and not self.running_lidar):
+            self.running_lidar = True
+            print("Started Lidar recording")
+        elif self.mode == 0 and self.running_lidar:
+            self.running_lidar = False
+            print("Stopped Lidar recording")
         if(self.mode == 5):
             playSongs(3)
         
@@ -574,6 +736,7 @@ class MyController(Controller):
 
 
 print("hello world")
+
 try:
     ser = serial.Serial('/dev/ttyACM0',9600)
 except SerialException as e:
@@ -601,6 +764,9 @@ driver_thread = threading.Thread(target=driver_thread_funct, args=(controller,))
 driver_thread.daemon = True
 driver_thread.start()
 
+lidar_thread = threading.Thread(target=lidar_thread_funct, args=(controller,))
+lidar_thread.daemon = True
+lidar_thread.start()
 
 controller.listen()
 
