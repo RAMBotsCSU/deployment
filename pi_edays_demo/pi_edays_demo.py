@@ -67,9 +67,25 @@ window = sg.Window('RamBOTs', layout, size=(800, 420))
 
 
 AUDIO_ENABLED = False
+audio_dict = {"startMLSound": None, 
+              "stopMLSound": None,
+              "walkMode": None,
+              "pushUpsMode": None,
+              "legControlMode": None,
+              "gyroMode": None,
+              "machineLearningMode": None,
+              "danceMode": None,
+              "song1": None,
+              "song2": None,
+              "song3": None,
+              "song4": None,
+              "startup1": None,
+              "startup2": None,
+              "pause": None,
+              "error": None
+              }
 
 if (AUDIO_ENABLED):
-
 
     mixer.init()
     audioFolder = 'Resources/Sounds/'
@@ -81,32 +97,26 @@ if (AUDIO_ENABLED):
     startMLSound = pygame.mixer.Sound(audioFolder + 'Other/starting_ML.mp3')
     stopMLSound = pygame.mixer.Sound(audioFolder + 'Other/stopping_ML.mp3')
 
-    sheep1 = pygame.mixer.Sound(audioFolder + 'Sheeps/sheep1.mp3')
-    sheep2 = pygame.mixer.Sound(audioFolder + 'Sheeps/sheep2.mp3')
-    sheep3 = pygame.mixer.Sound(audioFolder + 'Sheeps/sheep3.mp3')
-    sheep4 = pygame.mixer.Sound(audioFolder + 'Sheeps/sheep4.mp3')
-    sheep5 = pygame.mixer.Sound(audioFolder + 'Sheeps/sheep_sounds.mp3')
+    # sheep1 = pygame.mixer.Sound(audioFolder + 'Sheeps/sheep1.mp3')
+    # sheep2 = pygame.mixer.Sound(audioFolder + 'Sheeps/sheep2.mp3')
+    # sheep3 = pygame.mixer.Sound(audioFolder + 'Sheeps/sheep3.mp3')
+    # sheep4 = pygame.mixer.Sound(audioFolder + 'Sheeps/sheep4.mp3')
+    # sheep5 = pygame.mixer.Sound(audioFolder + 'Sheeps/sheep_sounds.mp3')
 
-    hi1 = pygame.mixer.Sound(audioFolder + 'Hello/hi1.mp3')
-    hi2 = pygame.mixer.Sound(audioFolder + 'Hello/hi2.mp3')
-    hi3 = pygame.mixer.Sound(audioFolder + 'Hello/hi3.mp3')
+    # hi1 = pygame.mixer.Sound(audioFolder + 'Hello/hi1.mp3')
+    # hi2 = pygame.mixer.Sound(audioFolder + 'Hello/hi2.mp3')
+    # hi3 = pygame.mixer.Sound(audioFolder + 'Hello/hi3.mp3')
 
-    mergedHi1 = pygame.mixer.Sound(audioFolder + 'MergedHellos/MergedHi1.mp3')
-    mergedHi2 = pygame.mixer.Sound(audioFolder + 'MergedHellos/MergedHi2.mp3')
-    mergedHi3 = pygame.mixer.Sound(audioFolder + 'MergedHellos/MergedHi3.mp3')
+    # mergedHi1 = pygame.mixer.Sound(audioFolder + 'MergedHellos/MergedHi1.mp3')
+    # mergedHi2 = pygame.mixer.Sound(audioFolder + 'MergedHellos/MergedHi2.mp3')
+    # mergedHi3 = pygame.mixer.Sound(audioFolder + 'MergedHellos/MergedHi3.mp3')
 
     walkMode = pygame.mixer.Sound(audioFolder + 'Mode_Switch/walking.mp3')
-    walkAlternate = pygame.mixer.Sound(audioFolder + 'Mode_Switch/walking_here.mp3')
     pushUpsMode = pygame.mixer.Sound(audioFolder + 'Mode_Switch/push_ups.mp3')
-    pushUpsAlternate = pygame.mixer.Sound(audioFolder + 'Mode_Switch/push_ups_gains.mp3')
     legControlMode = pygame.mixer.Sound(audioFolder + 'Mode_Switch/leg_control.mp3')
-    legControlAlternate = pygame.mixer.Sound(audioFolder + 'Mode_Switch/leg_control_brrr.mp3')
     gyroMode = pygame.mixer.Sound(audioFolder + 'Mode_Switch/gyro.mp3')
-    gyroAlternate = pygame.mixer.Sound(audioFolder + 'Mode_Switch/gyro_alternate.mp3')
     machineLearningMode = pygame.mixer.Sound(audioFolder + 'Mode_Switch/machine_learning.mp3')
-    machineLearningAlternate = pygame.mixer.Sound(audioFolder + 'Mode_Switch/machine_learning_robot.mp3')
     danceMode = pygame.mixer.Sound(audioFolder + 'Mode_Switch/dance_mode.mp3')
-    danceAlternate = pygame.mixer.Sound(audioFolder + 'Mode_Switch/dance_mode_alt2.mp3')
 
     song1 = pygame.mixer.Sound(audioFolder + 'Songs/mayahe.mp3')
     song2 = pygame.mixer.Sound(audioFolder + 'Songs/WhoLetTheDogsOut.mp3')
@@ -123,50 +133,63 @@ if (AUDIO_ENABLED):
     startMLSound.set_volume(0.4)
     stopMLSound.set_volume(0.4)
 
-    sheep1.set_volume(0.8)
-    sheep2.set_volume(0.8)
-    sheep3.set_volume(0.8)
-    sheep4.set_volume(0.8)
-    sheep5.set_volume(0.5)
+    # sheep1.set_volume(0.8)
+    # sheep2.set_volume(0.8)
+    # sheep3.set_volume(0.8)
+    # sheep4.set_volume(0.8)
+    # sheep5.set_volume(0.5)
 
-    hi1.set_volume(0.5)
-    hi2.set_volume(0.5)
-    hi3.set_volume(0.5)
+    # hi1.set_volume(0.5)
+    # hi2.set_volume(0.5)
+    # hi3.set_volume(0.5)
 
-    mergedHi1.set_volume(0.9)
-    mergedHi2.set_volume(0.9)
-    mergedHi3.set_volume(0.9)
+    # mergedHi1.set_volume(0.9)
+    # mergedHi2.set_volume(0.9)
+    # mergedHi3.set_volume(0.9)
 
     walkMode.set_volume(0.5)
-    walkAlternate.set_volume(0.45)
     pushUpsMode.set_volume(0.5)
-    pushUpsAlternate.set_volume(0.5)
     legControlMode.set_volume(0.5)
-    legControlAlternate.set_volume(0.5)
     gyroMode.set_volume(0.5)
-    gyroAlternate.set_volume(0.5)
     machineLearningMode.set_volume(0.5)
-    machineLearningAlternate.set_volume(0.5)
     danceMode.set_volume(0.45)
-    danceAlternate.set_volume(0.45)
 
     song1.set_volume(0.25) #mayahe
     song2.set_volume(0.2) #Who let the dogs out
     song3.set_volume(0.2) #crazy la pint
     song4.set_volume(0.25) #party rock
 
+    audio_dict = {
+                    "startMLSound": startMLSound, 
+                    "stopMLSound": stopMLSound,
+                    "walkMode": walkMode,
+                    "pushUpsMode": pushUpsMode,
+                    "legControlMode": legControlMode,
+                    "gyroMode": gyroMode,
+                    "machineLearningMode": machineLearningMode,
+                    "danceMode": danceMode,
+                    "song1": song1,
+                    "song2": song2,
+                    "song3": song3,
+                    "song4": song4,
+                    "startup1": startup1,
+                    "startup2": startup2,
+                    "pause": pause,
+                    "error": error
+                    }
+
+
     #sound libraries
-    sheep_sounds = [sheep1,sheep2,sheep3,sheep4,sheep5]
-    hi_sounds = [hi1,hi2,hi3]
-    merged_sounds = [mergedHi1, mergedHi2, mergedHi3]
-    mode_sounds = [walkMode,walkAlternate,pushUpsMode,pushUpsAlternate,legControlMode,legControlAlternate,gyroMode,gyroAlternate,machineLearningMode,machineLearningAlternate]
-    songs = [song1,song2,song3,song4]
+    # sheep_sounds = [sheep1,sheep2,sheep3,sheep4,sheep5]
+    # hi_sounds = [hi1,hi2,hi3]
+    # merged_sounds = [mergedHi1, mergedHi2, mergedHi3]
+    # mode_sounds = [walkMode,walkAlternate,pushUpsMode,pushUpsAlternate,legControlMode,legControlAlternate,gyroMode,gyroAlternate,machineLearningMode,machineLearningAlternate]
+    # songs = [song1,song2,song3,song4]
 
-slider_value = slider_default
 
-def playSound(sound):
+def playSound(soundStr):
     if (AUDIO_ENABLED):
-        playSound(sound)
+        pygame.mixer.Sound.play(audio_dict[soundStr])
 
 def gui_handler(controller,window): # manage the GUI
 
@@ -207,14 +230,14 @@ def gui_table_handler(controller): # update the GUI table with controller inputs
 processML = None
 
 def startML():
-    playSound(startMLSound)
+    playSound("startMLSound")
     global processML
     print("starting machine learning!")
     processML = subprocess.Popen(['python3', 'machine_learning/Object_Detection.py','--geometry', '800x600+100+100'])
 
 
 def killML():
-    playSound(stopMLSound)
+    playSound("stopMLSound")
     global processML
     if processML:
         print("killing machine learning.")
@@ -269,22 +292,22 @@ def runLidarInference(lidar_data, interpreter):
 def playModeSounds(mode):
     stopSounds()
     if mode == 0:
-        playSound(random.choice([walkMode]*19 + [walkAlternate]*1))
+        playSound("walkMode")
         window['-MODE_TEXT-'].update("MODE 1: WALK")
     elif mode == 1:
-        playSound(random.choice([pushUpsMode]*19 + [pushUpsAlternate]*1))
+        playSound("pushUpsMode")
         window['-MODE_TEXT-'].update("MODE 2: PUSH-UPS")
     elif mode == 2:
-        playSound(random.choice([legControlMode]*19 + [legControlAlternate]*1))
+        playSound("legControlMode")
         window['-MODE_TEXT-'].update("MODE 3: LEG CONTROL")
     elif mode == 3:
-        playSound(random.choice([gyroMode]*19 + [gyroAlternate]*1))
+        playSound("gyroMode")
         window['-MODE_TEXT-'].update("MODE 4: GYRO CONTROL")
     elif mode == 4:
-        playSound(random.choice([machineLearningMode]*19 + [machineLearningAlternate]*1))
+        playSound("machineLearningMode")
         window['-MODE_TEXT-'].update("MODE 5: MACHINE LEARNING")
     elif mode == 5:
-        playSound(random.choice([danceMode]*19 + [danceAlternate]*1))
+        playSound("danceMode")
         window['-MODE_TEXT-'].update("MODE 6: DANCE")
         playSongs(-1)
         
@@ -299,15 +322,15 @@ def playSongs(song):
     for sound in songs:
         sound.stop()
     if(song == -1):
-        playSound(random.choice(songs))
+        playSound(random.choice(["song1", "song2", "song3", "song4"]))
     elif(song == 1):
-        playSound(song1)
+        playSound("song1")
     elif(song == 2):
-        playSound(song2)
+        playSound("song2")
     elif(song == 3):
-        playSound(song3)
+        playSound("song3")
     elif(song == 4):
-        playSound(song4)
+        playSound("song4")
     
 def rgb(m):
     bashCommand, filename = os.path.split(os.path.abspath(__file__))
@@ -376,7 +399,7 @@ def serial_read_write(string): # use time library to call every 10 ms in separat
 
 def driver_thread_funct(controller):
 
-    playSound(random.choice([startup1]*19 + [startup2]*1)) # dont mind this line
+    playSound(random.choice(["startup1"]*19 + ["startup2"]*1)) # dont mind this line
     runningMode = 0
     joystickArr = [0.000, 0.000, 0.000, 0.000, 0.000, 0.000]
     rgb(0)
@@ -700,7 +723,7 @@ class MyController(Controller):
         
     def on_options_press(self):
         self.miscButtonArr[1] = 1
-        playSound(random.choice(merged_sounds))
+        # playSound(random.choice(merged_sounds))
         
     def on_options_release(self):
         self.miscButtonArr[1] = 0
@@ -723,7 +746,7 @@ class MyController(Controller):
             rgb(-1)
         else:
             rgb(self.mode)
-        playSound(pause)
+        playSound("pause")
 
     def on_playstation_button_release(self):
         self.miscButtonArr[2] = 0
@@ -751,7 +774,7 @@ try:
 except SerialException as e:
     print(f"An error occured: {e}. \nPlease unplug the USB to the Teensy, press stop, and plug it in again.")
     #play sound here
-    playSound(error)
+    playSound("error")
 
     while(1):
         pass
