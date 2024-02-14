@@ -293,7 +293,7 @@ void loop() {
       int r3Index = readStr.indexOf("R3:");
       miscButtonArr[4] = readStr.substring(r3Index+3,r3Index+4).toInt();
 
-      // Serial.println(getArrStr());
+      Serial.println(getArrStr());
     }
 
     
