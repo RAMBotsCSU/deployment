@@ -61,9 +61,9 @@ tab1_layout = [
     [sg.Image('./Resources/RamBOTs_Logo_Small.png')],
 ]
 
-layout = [tab1_layout]    
+layout = [tab1_layout]
 
-window = sg.Window('RamBOTs', layout, size=(800, 420)) 
+window = sg.Window('RamBOTs', layout, size=(800, 420))
 
 
 AUDIO_ENABLED = False
@@ -199,16 +199,16 @@ def gui_handler(controller,window): # manage the GUI
         if event == sg.WIN_CLOSED:           # way out of UI
             print("brealong")
             break
-            
+
 def update_table_cell(table, row, col, value):
-    table.Widget.set(table.Widget.get_children()[row], "#" + str(col + 1), value)        
-        
+    table.Widget.set(table.Widget.get_children()[row], "#" + str(col + 1), value)
+
 def gui_table_handler(controller): # update the GUI table with controller inputs every x seconds
     print("hello from gui handler")
     global table
-    
+
     while True:
-        
+
         if (controller.paused):
             update_table_cell(table, 7, 1, "Sh:0,Op:0,Ps:1,L3:0,R3:0")
         else:
@@ -220,10 +220,10 @@ def gui_table_handler(controller): # update the GUI table with controller inputs
             update_table_cell(table, 4, 1, f"{controller.mode}")
             update_table_cell(table, 5, 1, f"←:{controller.dpadArr[0]}  →:{controller.dpadArr[1]}  ↑:{controller.dpadArr[2]}  ↓:{controller.dpadArr[3]}")
             update_table_cell(table, 6, 1, f"□:{controller.shapeButtonArr[0]}  △:{controller.shapeButtonArr[1]}  ○:{controller.shapeButtonArr[2]}  X:{controller.shapeButtonArr[3]}")
-            update_table_cell(table, 7, 1, f"Sh:{controller.miscButtonArr[0]},Op:{controller.miscButtonArr[1]},Ps:{controller.miscButtonArr[2]},L3:{controller.miscButtonArr[3]},R3:{controller.miscButtonArr[4]}"    
+            update_table_cell(table, 7, 1, f"Sh:{controller.miscButtonArr[0]},Op:{controller.miscButtonArr[1]},Ps:{controller.miscButtonArr[2]},L3:{controller.miscButtonArr[3]},R3:{controller.miscButtonArr[4]}"
             )
         time.sleep(0.1)
-       
+
 
 
 
@@ -310,14 +310,14 @@ def playModeSounds(mode):
         playSound("danceMode")
         window['-MODE_TEXT-'].update("MODE 6: DANCE")
         playSongs(-1)
-        
+
 
 def stopSounds():
     for sound in mode_sounds:
         sound.stop()
     for sound in songs:
         sound.stop()
-    
+
 def playSongs(song):
     for sound in songs:
         sound.stop()
@@ -331,7 +331,7 @@ def playSongs(song):
         playSound("song3")
     elif(song == 4):
         playSound("song4")
-    
+
 def rgb(m):
     bashCommand, filename = os.path.split(os.path.abspath(__file__))
     bashCommand = "sudo bash " + bashCommand + "/controllerColor.sh "
@@ -352,7 +352,7 @@ def rgb(m):
     else:
         bashCommand = bashCommand + "255 0 0"
     subprocess.Popen(bashCommand.split(), stdout=subprocess.PIPE)
-        
+
 def joystick_map_to_range(original_value):
     mapped_value = ((original_value + 32767) / 65535) * 2 - 1
     return mapped_value
@@ -362,7 +362,7 @@ def trigger_map_to_range(value):
     if(value < 0):
         return (value/65534)
     elif(value > 0):
-        return (value/65198)        
+        return (value/65198)
     else:
         return 0
 
@@ -370,7 +370,7 @@ def trigger_map_to_range(value):
 def joey_trigger_map_to_range(value):
     newValue = (value+168)/65366
     return newValue
-        
+
 def padStr(val):
     for _ in range (120-len(val)):
         val = val + "~"
@@ -408,7 +408,7 @@ def driver_thread_funct(controller):
     
     #running section
     while True:
-        
+
         runningMode = controller.mode
         paused = controller.paused
         #0 = strafe, 1 = forback, 2 = roll, 3 = turn, 4 = pitch
@@ -439,8 +439,19 @@ def driver_thread_funct(controller):
         controller.dpadArr[2], controller.dpadArr[3], controller.shapeButtonArr[0],
         controller.shapeButtonArr[1], controller.shapeButtonArr[2], controller.shapeButtonArr[3],
         controller.miscButtonArr[0], controller.miscButtonArr[1], controller.miscButtonArr[2],
-        controller.miscButtonArr[3], controller.miscButtonArr[4]))
-                
+        controller.miscButtonArr[3], controller.miscButtonArr[4])
+
+        serial_read_write(data)
+
+
+        # serial_read_write(''',{0:.3f},{1:.3f},{2:.3f},{3:.3f},{4:.3f},{5:.3f},M:{6},LD:{7},RD:{8},UD:{9},DD:{10},Sq:{11},Tr:{12},Ci:{13},Xx:{14},Sh:{15},Op:{16},Ps:{17},L3:{18},R3:{19}'''
+        # .format(joystickArr[0], joystickArr[1], joystickArr[2], joystickArr[3], joystickArr[4], joystickArr[5],
+        # runningMode, controller.dpadArr[0], controller.dpadArr[1],
+        # controller.dpadArr[2], controller.dpadArr[3], controller.shapeButtonArr[0],
+        # controller.shapeButtonArr[1], controller.shapeButtonArr[2], controller.shapeButtonArr[3],
+        # controller.miscButtonArr[0], controller.miscButtonArr[1], controller.miscButtonArr[2],
+        # controller.miscButtonArr[3], controller.miscButtonArr[4]))
+
        # time.sleep(0.01)
         #update_gui_table_controller(controller)
 
@@ -571,19 +582,19 @@ class MyController(Controller):
             self.l3_horizontal = value
         else:
             self.l3_horizontal = 0
-        
+
     def on_L3_right(self, value):
         if (abs(value) > self.deadzone):
             self.l3_horizontal = value
         else:
             self.l3_horizontal = 0
-        
+
     def on_L3_x_at_rest(self):
         self.l3_horizontal = 0
-             
+
     def on_L3_y_at_rest(self):
         self.l3_vertical = 0
-                
+
     def on_R3_up(self, value):
         if (abs(value) > self.deadzone):
             self.r3_vertical = -value
@@ -610,7 +621,7 @@ class MyController(Controller):
 
     def on_R3_x_at_rest(self):
         self.r3_horizontal = 0
-         
+
     def on_R3_y_at_rest(self):
         self.r3_vertical = 0
 
@@ -624,12 +635,12 @@ class MyController(Controller):
             playModeSounds(self.mode)
 
 
-        
+
     def on_L1_release(self):
         pass
-        
+
     def on_R1_press(self):
-        if(not self.paused): 
+        if(not self.paused):
             if self.mode >= self.modeMax:
                 self.mode = 0
             else:
@@ -637,18 +648,18 @@ class MyController(Controller):
             rgb(self.mode)
             playModeSounds(self.mode)
 
-        
+
     def on_R1_release(self):
         pass
-        
+
     def on_square_press(self):
         self.shapeButtonArr[0] = 1
         if(self.mode == 5):
             playSongs(1)
-        
+
     def on_square_release(self):
         self.shapeButtonArr[0] = 0
-        
+
     def on_triangle_press(self):
         self.shapeButtonArr[1] = 1
         if (self.mode == 4 and not self.running_ML):
@@ -659,10 +670,10 @@ class MyController(Controller):
             killML()
         elif(self.mode == 5):
             playSongs(2)
-        
+
     def on_triangle_release(self):
         self.shapeButtonArr[1] = 0
-        
+
     def on_circle_press(self):
         self.shapeButtonArr[2] = 1
         if (self.mode == 0 and not self.running_lidar):
@@ -673,38 +684,38 @@ class MyController(Controller):
             print("Stopped Lidar recording")
         if(self.mode == 5):
             playSongs(3)
-        
+
     def on_circle_release(self):
         self.shapeButtonArr[2] = 0
-        
+
     def on_x_press(self):
         self.shapeButtonArr[3] = 1
         if(self.mode == 5):
             playSongs(4)
-        
+
     def on_x_release(self):
         self.shapeButtonArr[3] = 0
-        
+
     def on_up_arrow_press(self):
         self.dpadArr[2] = 1
-        
+
     def on_up_down_arrow_release(self):
         self.dpadArr[2] = 0
         self.dpadArr[3] = 0
-        
+
     def on_down_arrow_press(self):
         self.dpadArr[3] = 1
-        
+
     def on_left_arrow_press(self):
         self.dpadArr[0] = 1
-        
+
     def on_left_right_arrow_release(self):
         self.dpadArr[0] = 0
         self.dpadArr[1] = 0
-        
+
     def on_right_arrow_press(self):
         self.dpadArr[1] = 1
-        
+
     def on_L3_press(self):
         self.miscButtonArr[3] = 1
         #playSound(random.choice(merged_sounds))
@@ -713,27 +724,27 @@ class MyController(Controller):
     
     def on_L3_release(self):
         self.miscButtonArr[3] = 0
-        
+
     def on_R3_press(self):
         stopSounds()
         self.miscButtonArr[4] = 1
-        
+
     def on_R3_release(self):
         self.miscButtonArr[4] = 0
-        
+
     def on_options_press(self):
         self.miscButtonArr[1] = 1
         # playSound(random.choice(merged_sounds))
         
     def on_options_release(self):
         self.miscButtonArr[1] = 0
-        
+
     def on_share_press(self):
         self.miscButtonArr[0] = 1
-        
+
     def on_share_release(self):
         self.miscButtonArr[0] = 0
-        
+
     def on_playstation_button_press(self):
         self.miscButtonArr[2] = 1
 
@@ -752,19 +763,19 @@ class MyController(Controller):
         self.miscButtonArr[2] = 0
         if (not self.pauseChangeFlag):
             self.pauseChangeFlag = True # true flag means program is not paused
-        
+
     def on_R2_press(self,value):
         self.triggerR = value + 32431
-        
+
     def on_R2_release(self):
         self.triggerR = 0
-        
+
     def on_L2_press(self,value):
         self.triggerL = value + 32431
-        
+
     def on_L2_release(self):
         self.triggerL = 0
-        
+
 
 
 print("hello world")
@@ -801,4 +812,3 @@ lidar_thread.daemon = True
 lidar_thread.start()
 
 controller.listen()
-

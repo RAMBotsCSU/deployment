@@ -201,7 +201,7 @@ char buf[BUFFER_SIZE];
 
 //Main loop to be executed
 void loop() {
-  
+  getOdriveParams(Serial2);
   // check if data is available
   int rxlen = Serial.available(); // number of bytes available in Serial buffer
   
