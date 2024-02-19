@@ -431,7 +431,7 @@ def driver_thread_funct(controller):
 
             # joystickArr = inferred_values[0]
 
-        print("Joystick values:", joystickArr)
+        # print("Joystick values:", joystickArr)
 
 
         # Send data to the connected USB serial device
@@ -442,7 +442,7 @@ def driver_thread_funct(controller):
         controller.miscButtonArr[0], controller.miscButtonArr[1], controller.miscButtonArr[2],
         controller.miscButtonArr[3], controller.miscButtonArr[4])
 
-        serial_read_write(data, ser)
+        print("Output:",serial_read_write(data, ser))
 
 
 
