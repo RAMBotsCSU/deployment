@@ -290,7 +290,7 @@ def runLidarInference(lidar_data, interpreter):
 
 
 def playModeSounds(mode):
-    stopSounds()
+    # stopSounds()
     if mode == 0:
         playSound("walkMode")
         window['-MODE_TEXT-'].update("MODE 1: WALK")
@@ -720,7 +720,7 @@ class MyController(Controller):
         self.miscButtonArr[3] = 0
 
     def on_R3_press(self):
-        stopSounds()
+        # stopSounds()
         self.miscButtonArr[4] = 1
 
     def on_R3_release(self):
