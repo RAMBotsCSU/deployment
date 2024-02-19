@@ -384,7 +384,7 @@ def rmPadStr(val):
             outputStr += curChar
     return outputStr
 
-def serial_read_write(string): # use time library to call every 10 ms in separate thread
+def serial_read_write(string, ser): # use time library to call every 10 ms in separate thread
     ser.write(padStr(string).encode())
     # inp = str(ser.readline())
     # inp = inp[2:-5]
@@ -433,24 +433,18 @@ def driver_thread_funct(controller):
 
         print("Joystick values:", joystickArr)
 
-        serial_read_write(''',{0:.3f},{1:.3f},{2:.3f},{3:.3f},{4:.3f},{5:.3f},M:{6},LD:{7},RD:{8},UD:{9},DD:{10},Sq:{11},Tr:{12},Ci:{13},Xx:{14},Sh:{15},Op:{16},Ps:{17},L3:{18},R3:{19}'''
-        .format(joystickArr[0], joystickArr[1], joystickArr[2], joystickArr[3], joystickArr[4], joystickArr[5],
+
+        # Send data to the connected USB serial device
+        data = '''J0:{0:.3f},J1:{1:.3f},J2:{2:.3f},J3:{3:.3f},J4:{4:.3f},J5:{5:.3f},M:{6},LD:{7},RD:{8},UD:{9},DD:{10},Sq:{11},Tr:{12},Ci:{13},Xx:{14},Sh:{15},Op:{16},Ps:{17},L3:{18},R3:{19},#'''.format(joystickArr[0], joystickArr[1], joystickArr[2], joystickArr[3], joystickArr[4], joystickArr[5],
         runningMode, controller.dpadArr[0], controller.dpadArr[1],
         controller.dpadArr[2], controller.dpadArr[3], controller.shapeButtonArr[0],
         controller.shapeButtonArr[1], controller.shapeButtonArr[2], controller.shapeButtonArr[3],
         controller.miscButtonArr[0], controller.miscButtonArr[1], controller.miscButtonArr[2],
         controller.miscButtonArr[3], controller.miscButtonArr[4])
 
-        serial_read_write(data)
+        serial_read_write(data, ser)
 
 
-        # serial_read_write(''',{0:.3f},{1:.3f},{2:.3f},{3:.3f},{4:.3f},{5:.3f},M:{6},LD:{7},RD:{8},UD:{9},DD:{10},Sq:{11},Tr:{12},Ci:{13},Xx:{14},Sh:{15},Op:{16},Ps:{17},L3:{18},R3:{19}'''
-        # .format(joystickArr[0], joystickArr[1], joystickArr[2], joystickArr[3], joystickArr[4], joystickArr[5],
-        # runningMode, controller.dpadArr[0], controller.dpadArr[1],
-        # controller.dpadArr[2], controller.dpadArr[3], controller.shapeButtonArr[0],
-        # controller.shapeButtonArr[1], controller.shapeButtonArr[2], controller.shapeButtonArr[3],
-        # controller.miscButtonArr[0], controller.miscButtonArr[1], controller.miscButtonArr[2],
-        # controller.miscButtonArr[3], controller.miscButtonArr[4]))
 
        # time.sleep(0.01)
         #update_gui_table_controller(controller)
