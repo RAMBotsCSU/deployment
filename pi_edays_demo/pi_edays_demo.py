@@ -319,8 +319,8 @@ def stopSounds():
         sound.stop()
 
 def playSongs(song):
-    for sound in songs:
-        sound.stop()
+    # for sound in songs:
+    #     sound.stop()
     if(song == -1):
         playSound(random.choice(["song1", "song2", "song3", "song4"]))
     elif(song == 1):
