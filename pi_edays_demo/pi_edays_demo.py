@@ -386,16 +386,10 @@ def rmPadStr(val):
 
 def serial_read_write(string, ser): # use time library to call every 10 ms in separate thread
     ser.write(padStr(string).encode())
-    # inp = str(ser.readline())
-    # inp = inp[2:-5]
-    # inp = rmPadStr(inp)
-    #window['text'].update(inp)
-    #print("From teensy: " + inp)
-#     if (gui_counter == 5):
-#         update_gui_table(inp)
-#         gui_counter = 0
-#     gui_counter = gui_counter + 1
-    return
+    inp = str(ser.readline())
+    inp = inp[2:-5]
+    inp = rmPadStr(inp)
+    return inp
 
 def driver_thread_funct(controller):
 
