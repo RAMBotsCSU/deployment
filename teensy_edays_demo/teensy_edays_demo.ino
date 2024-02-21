@@ -84,6 +84,42 @@ ODriveArduino odrive4(odrive4Serial);
 ODriveArduino odrive5(odrive5Serial);
 ODriveArduino odrive6(odrive6Serial);
 
+void moveToStart(ODriveArduino odrive, float offSet, int axis) {
+  float currPos = 0;
+
+  while (currPos < offSet) {
+    // float pos = constrain(currPos, -2.5,2.5);
+    if (offSet > currPos) {
+      currPos += 0.01;
+    }
+    Serial.print("Curr postition ");
+    Serial.println(currPos);
+    odrive.SetPosition(axis, currPos);
+    delay(50);
+  }
+  Serial.println("Done with start up");
+
+}
+
+void initLegPositions() {
+  moveToStart(odrive1, offset10, 0);
+  moveToStart(odrive1, offset11, 1);
+
+  moveToStart(odrive2, offset20, 0);
+  moveToStart(odrive2, offset21, 1);
+
+  moveToStart(odrive3, offset30, 0);
+  moveToStart(odrive3, offset31, 1);
+
+  moveToStart(odrive4, offset40, 0);
+  moveToStart(odrive4, offset41, 1);
+
+  moveToStart(odrive5, offset50, 0);
+  moveToStart(odrive5, offset51, 1);
+
+  moveToStart(odrive6, offset60, 0);
+  moveToStart(odrive6, offset61, 1);
+}
 
 void setup() {
   pinMode(led, OUTPUT);
@@ -118,6 +154,8 @@ void setup() {
   // TEMP
   Serial.setTimeout(100);
   getOdriveParams(Serial2);
+
+  initLegPositions();  
 }
 
 String getArrStr(){
