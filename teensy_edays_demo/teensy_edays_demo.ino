@@ -102,23 +102,23 @@ void moveToStart(ODriveArduino odrive, float offSet, int axis) {
 }
 
 void initLegPositions() {
-  moveToStart(odrive1, offset10, 0);
-  moveToStart(odrive1, offset11, 1);
+  moveToStart(odrive1, offSet10, 0);
+  moveToStart(odrive1, offSet11, 1);
 
-  moveToStart(odrive2, offset20, 0);
-  moveToStart(odrive2, offset21, 1);
+  moveToStart(odrive2, offSet20, 0);
+  moveToStart(odrive2, offSet21, 1);
 
-  moveToStart(odrive3, offset30, 0);
-  moveToStart(odrive3, offset31, 1);
+  moveToStart(odrive3, offSet30, 0);
+  moveToStart(odrive3, offSet31, 1);
 
-  moveToStart(odrive4, offset40, 0);
-  moveToStart(odrive4, offset41, 1);
+  moveToStart(odrive4, offSet40, 0);
+  moveToStart(odrive4, offSet41, 1);
 
-  moveToStart(odrive5, offset50, 0);
-  moveToStart(odrive5, offset51, 1);
+  moveToStart(odrive5, offSet50, 0);
+  moveToStart(odrive5, offSet51, 1);
 
-  moveToStart(odrive6, offset60, 0);
-  moveToStart(odrive6, offset61, 1);
+  moveToStart(odrive6, offSet60, 0);
+  moveToStart(odrive6, offSet61, 1);
 }
 
 void setup() {
