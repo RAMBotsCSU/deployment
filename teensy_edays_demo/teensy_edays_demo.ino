@@ -84,21 +84,50 @@ ODriveArduino odrive4(odrive4Serial);
 ODriveArduino odrive5(odrive5Serial);
 ODriveArduino odrive6(odrive6Serial);
 
+// void moveToStart(ODriveArduino odrive, float offSet, int axis) {
+//   float currPos = 0;
+
+//   while (currPos != offSet) {
+
+//     if (offSet > currPos) {
+//       currPos += 0.01;
+//     } 
+//     else if (offSet < currPos) {
+//       currPos -= 0.01;
+//     }
+//     Serial.print("Curr pos ");
+//     Serial.print((currPos));
+//     Serial.print(" Target pos ");
+//     Serial.print((offSet));
+//     Serial.print(" cond ");
+//     Serial.println((float)currPos == (float)offSet);
+    
+
+//     // odrive.SetPosition(axis, currPos);
+//     delay(50);
+//   }
+  
+// }
+
 void moveToStart(ODriveArduino odrive, float offSet, int axis) {
   float currPos = 0;
-
-  while (currPos < offSet) {
-    // float pos = constrain(currPos, -2.5,2.5);
+  float tolerance = 0.01; // Define a tolerance level
+  
+  while (fabs(currPos - offSet) > tolerance) { // Use fabs for absolute difference
     if (offSet > currPos) {
       currPos += 0.01;
+    } 
+    else if (offSet < currPos) {
+      currPos -= 0.01;
     }
-    Serial.print("Curr postition ");
-    Serial.println(currPos);
+    Serial.print("Curr pos ");
+    Serial.print(currPos);
+    Serial.print(" Target pos ");
+    Serial.print(offSet);
+    Serial.print(" cond ");
     odrive.SetPosition(axis, currPos);
     delay(50);
   }
-  Serial.println("Done with start up");
-
 }
 
 void initLegPositions() {
@@ -119,6 +148,9 @@ void initLegPositions() {
 
   moveToStart(odrive6, offSet60, 0);
   moveToStart(odrive6, offSet61, 1);
+
+  Serial.println("Done with start up");
+
 }
 
 void setup() {
@@ -153,9 +185,9 @@ void setup() {
 
   // TEMP
   Serial.setTimeout(100);
-  getOdriveParams(Serial2);
+  // getOdriveParams(Serial2);
 
-  initLegPositions();  
+  // initLegPositions();  
 }
 
 String getArrStr(){
@@ -337,7 +369,7 @@ void loop() {
     
   }
 
-  if(shapeButtonArr[0]==1 && gainsFlag){
+  if(gainsFlag){
     modifyGains();
     gainsFlag = false;
   }
