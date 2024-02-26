@@ -22,8 +22,9 @@ import queue
 from pycoral.utils import edgetpu
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
+import time
 
-shared_queue = queue.Queue()
+shared_queue = queue.Queue() # for sharing data accross two threads
 lidar_view = []
 
 sg.theme('DarkGreen2')
@@ -65,6 +66,7 @@ layout = [tab1_layout]
 
 window = sg.Window('RamBOTs', layout, size=(800, 420))
 
+STOP_FLAG = False
 
 AUDIO_ENABLED = False
 audio_dict = {"startMLSound": None, 
@@ -398,36 +400,37 @@ def driver_thread_funct(controller):
     joystickArr = [0.000, 0.000, 0.000, 0.000, 0.000, 0.000]
     rgb(0)
     gui_update_counter = 0
-    inferred_values = [[1.000, 1.000, 1.000, 1.000, 1.000, 1.000]]
+    inferred_values = [0.000, 0.000, 0.000, 0.000, 0.000, 0.000] # gets updated by machine learning inference
     
     #running section
     while True:
 
         runningMode = controller.mode
         paused = controller.paused
-        #0 = strafe, 1 = forback, 2 = roll, 3 = turn, 4 = pitch
-        #0 = L3LR, 1 = L3UD, 2 = triggerL, 3 = R3LR, 4 = R3UD, 5 = triggerR
-        joystickArr[0] = joystick_map_to_range(controller.l3_horizontal)+1
-        joystickArr[1] = joystick_map_to_range(controller.l3_vertical)+1
-        joystickArr[2] = trigger_map_to_range(controller.triggerL)+1
-        joystickArr[3] = joystick_map_to_range(controller.r3_horizontal)+1
-        joystickArr[4] = joystick_map_to_range(controller.r3_vertical)+1
-        joystickArr[5] = trigger_map_to_range(controller.triggerR)+1
+        # get controller values
+        joystickArr = [controller.l3_horizontal,    # 0 = strafe, leftStick/L3 Left-Right
+                       controller.l3_vertical,      # 1 = forback, leftStick/L3 Up-Down
+                       controller.triggerL,         # 2 = roll, triggerL/L2
+                       controller.r3_horizontal,    # 3 = turn, rightStick/R3 Left-Right
+                       controller.r3_vertical,      # 4 = pitch, rightStick/R3 Up-Down
+                       controller.triggerR]         # 5 = does nothing, triggerR/R2
+        # Note : the joystickArr[4]/pitch is not used in walk mode
 
-        if controller.running_lidar:
+        if controller.running_stop_mode and STOP_FLAG:
+            joystickArr = [0.000, 0.000, 0.000, 0.000, 0.000, 0.000]
+
+        if controller.running_autonomous_walk:
             if not shared_queue.empty():
-                inferred_values = shared_queue.get()
-            
-            index = 0
-            for val in inferred_values[0]:
-                joystickArr[index] = val
-                index += 1
-
-            # joystickArr = inferred_values[0]
+                inferred_values = shared_queue.get() # update inferred values from lidar thread
+            joystickArr = inferred_values # set joystickArr equal regardless of updating inferred_values
+            # Note: inferred values gets updated slower than data is output to teensy
 
         # print("Joystick values:", joystickArr)
 
-
+        # remap values to range between 0 and 2 (controller outputs -1 to 1)
+        for x in range(joystickArr):
+            joystickArr[x] += 1
+        
         # Send data to the connected USB serial device
         data = '''J0:{0:.3f},J1:{1:.3f},J2:{2:.3f},J3:{3:.3f},J4:{4:.3f},J5:{5:.3f},M:{6},LD:{7},RD:{8},UD:{9},DD:{10},Sq:{11},Tr:{12},Ci:{13},Xx:{14},Sh:{15},Op:{16},Ps:{17},L3:{18},R3:{19},#'''.format(joystickArr[0], joystickArr[1], joystickArr[2], joystickArr[3], joystickArr[4], joystickArr[5],
         runningMode, controller.dpadArr[0], controller.dpadArr[1],
@@ -454,6 +457,7 @@ def lidar_thread_funct(controller):
     lcd.fill((0,0,0))
     pygame.display.update()
 
+
     #Create variables
     model_path = 'machine_learning/lidar_model_quantized_edgetpu.tflite'
     interpreter = edgetpu.make_interpreter(model_path, device='usb')
@@ -474,7 +478,10 @@ def lidar_thread_funct(controller):
         except:
             print("Error connecting to lidar. Trying again")
 
-    
+    # Define Parameters for Map
+    red_dot_threshold = 200 # 500=.5m (?); threshhold for detecting close object
+    white_dot_threshold = 5000 # furthest pointed picked up by lidar
+
             
     max_distance = 0
 
@@ -501,13 +508,42 @@ def lidar_thread_funct(controller):
     start_time = 0
     joystickArr = [0.000, 0.000, 0.000, 0.000, 0.000, 0.000]
 
-    
+    # define parameters for stop mode
+    starttime = time.time()
+    window = 10
+    # dist = [white_dot_threshold]*360 # stores lidar distances
+    avg_dist = [white_dot_threshold]*360 # stores moving averages
+    dist_buffer = [[]*360]
+
+    # avg_dist is updated to the average data set of all data sets in dist_buffer
+    def update_avg_dist(dist_buffer):
+        temp_avg = [white_dot_threshold]*360
+        for angle in range(359):                            # 360 angle values
+            dist_sum = 0                                    # temp hold distance sum of each angle
+            for arr in dist_buffer:                         # check same angle of each data set
+                dist_sum += arr[angle]                      # sum all distances at one angle
+            temp_avg[angle] = dist_sum / len(dist_buffer)   # average distance by size of dist_buffer
+        return temp_avg
 
     for scan in lidar.iter_scans():
         for (_, angle, distance) in scan:
             scan_data[min([359, int(angle)])] = distance 
 
-        if controller.running_lidar:
+        if controller.running_stop_mode:
+
+            if (time.time() - starttime) > 0.25: # every .25s
+                starttime = time.time() # restart timer
+                dist_buffer.append(scan_data) # add new data set to dist_buffer
+                if len(dist_buffer) > window: # more data sets than window parameter
+                    dist_buffer.pop(0) # remove oldest data set
+                    avg_dist = update_avg_dist(dist_buffer) # get average of all data sets
+                    if min(avg_dist) <= red_dot_threshold: # any distance within stop proximity?
+                        STOP_FLAG = True
+                    else:
+                        STOP_FLAG = False
+                        
+
+        if controller.running_autonomous_walk:
 
             if time.time() - start_time > .2:
                 start_time = time.time()
@@ -552,7 +588,8 @@ class MyController(Controller):
         self.pauseChangeFlag = True
         self.deadzone = 32767/10
         self.running_ML = False
-        self.running_lidar = False
+        self.running_autonomous_walk = False
+        self.running_stop_mode = False
 
     def on_L3_up(self, value):
         if (abs(value) > self.deadzone):
@@ -650,7 +687,13 @@ class MyController(Controller):
         self.shapeButtonArr[0] = 0
 
     def on_triangle_press(self):
-        self.shapeButtonArr[1] = 1
+        self.shapeButtonArr[1] = 1 # triangle button is pressed
+        if (self.mode == 0 and not self.running_autonomous_walk): 
+            self.running_autonomous_walk = True # if autonomous walk is not running, start autonomous walk
+            print("Started Autonomous Walk") 
+        elif self.mode == 0 and self.running_autonomous_walk:
+            self.running_autonomous_walk = False # if autonomous walk is running, stop autonomous walk
+            print("Stopped Autonomous Walk")
         if (self.mode == 4 and not self.running_ML):
             self.running_ML = True
             startML()
@@ -664,18 +707,18 @@ class MyController(Controller):
         self.shapeButtonArr[1] = 0
 
     def on_circle_press(self):
-        self.shapeButtonArr[2] = 1
-        if (self.mode == 0 and not self.running_lidar):
-            self.running_lidar = True
-            print("Started Lidar recording")
-        elif self.mode == 0 and self.running_lidar:
-            self.running_lidar = False
-            print("Stopped Lidar recording")
+        self.shapeButtonArr[2] = 1 # circle button pressed down
+        if(not self.running_stop_mode):
+            self.running_stop_mode = True # if stop mode is not running, start stop mode
+            print("Started Stop Mode")
+        elif(self.running_stop_mode):
+            self.running_stop_mode = False # if stop mode is running, stop 'stop mode'
+            print("Stop Stop Mode")
         if(self.mode == 5):
             playSongs(3)
 
     def on_circle_release(self):
-        self.shapeButtonArr[2] = 0
+        self.shapeButtonArr[2] = 0 # circle button released
 
     def on_x_press(self):
         self.shapeButtonArr[3] = 1
