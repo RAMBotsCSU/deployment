@@ -408,21 +408,21 @@ def driver_thread_funct(controller):
         runningMode = controller.mode
         paused = controller.paused
         # get controller values
-        joystickArr = [controller.l3_horizontal,    # 0 = strafe, leftStick/L3 Left-Right
-                       controller.l3_vertical,      # 1 = forback, leftStick/L3 Up-Down
-                       controller.triggerL,         # 2 = roll, triggerL/L2
-                       controller.r3_horizontal,    # 3 = turn, rightStick/R3 Left-Right
-                       controller.r3_vertical,      # 4 = pitch, rightStick/R3 Up-Down
-                       controller.triggerR]         # 5 = does nothing, triggerR/R2
+        joystickArr = [joystick_map_to_range(controller.l3_horizontal),    # 0 = strafe, leftStick/L3 Left-Right
+                       joystick_map_to_range(controller.l3_vertical),      # 1 = forback, leftStick/L3 Up-Down
+                       joystick_map_to_range(controller.triggerL),         # 2 = roll, triggerL/L2
+                       joystick_map_to_range(controller.r3_horizontal),    # 3 = turn, rightStick/R3 Left-Right
+                       joystick_map_to_range(controller.r3_vertical),      # 4 = pitch, rightStick/R3 Up-Down
+                       joystick_map_to_range(controller.triggerR)]         # 5 = does nothing, triggerR/R2
         # Note : the joystickArr[4]/pitch is not used in walk mode
 
-        # if controller.running_stop_mode and STOP_FLAG:
-        #     joystickArr = [0.000, 0.000, 0.000, 0.000, 0.000, 0.000]
+        if controller.running_stop_mode and STOP_FLAG:
+            joystickArr = [0.000, 0.000, 0.000, 0.000, 0.000, 0.000]
 
-        # if controller.running_autonomous_walk:
-        #     if not shared_queue.empty():
-        #         inferred_values = shared_queue.get() # update inferred values from lidar thread
-        #     joystickArr = inferred_values # set joystickArr equal regardless of updating inferred_values
+        if controller.running_autonomous_walk:
+            if not shared_queue.empty():
+                inferred_values = shared_queue.get() # update inferred values from lidar thread
+            joystickArr = inferred_values # set joystickArr equal regardless of updating inferred_values
             # Note: inferred values gets updated slower than data is output to teensy
 
         # print("Joystick values:", joystickArr)
