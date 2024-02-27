@@ -394,7 +394,7 @@ def serial_read_write(string, ser): # use time library to call every 10 ms in se
     return inp
 
 def driver_thread_funct(controller):
-
+    global STOP_FLAG
     playSound(random.choice(["startup1"]*19 + ["startup2"]*1)) # dont mind this line
     runningMode = 0
     joystickArr = [0.000, 0.000, 0.000, 0.000, 0.000, 0.000]
@@ -450,6 +450,7 @@ def driver_thread_funct(controller):
 
 def lidar_thread_funct(controller):
     global lidar_view
+    global STOP_FLAG
     # Set up pygame and the display
     os.putenv('SDL_FBDEV', '/dev/fb1')
     pygame.init()
