@@ -417,6 +417,7 @@ def driver_thread_funct(controller):
         # Note : the joystickArr[4]/pitch is not used in walk mode
 
         if controller.running_stop_mode and STOP_FLAG:
+            print("Signal Stop.")
             joystickArr = [0.000, 0.000, 0.000, 0.000, 0.000, 0.000]
 
         if controller.running_autonomous_walk:
@@ -540,7 +541,7 @@ def lidar_thread_funct(controller):
                     avg_dist = update_avg_dist(dist_buffer) # get average of all data sets
                     if min(avg_dist) <= red_dot_threshold: # any distance within stop proximity?
                         STOP_FLAG = True
-                        print("Signal Stop.")
+                        print("Stop Proximity.")
                     else:
                         STOP_FLAG = False
                         
