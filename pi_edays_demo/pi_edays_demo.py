@@ -440,7 +440,7 @@ def driver_thread_funct(controller):
         controller.miscButtonArr[3], controller.miscButtonArr[4])
 
         response = serial_read_write(data, ser)
-        print("Output:", response)
+        # print("Output:", response)
 
 
 
@@ -479,7 +479,7 @@ def lidar_thread_funct(controller):
             print("Error connecting to lidar. Trying again")
 
     # Define Parameters for Map
-    red_dot_threshold = 200 # 500=.5m (?); threshhold for detecting close object
+    red_dot_threshold = 1000 # 500=.5m (?); threshhold for detecting close object
     white_dot_threshold = 5000 # furthest pointed picked up by lidar
 
             
