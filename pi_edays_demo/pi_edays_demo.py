@@ -416,20 +416,20 @@ def driver_thread_funct(controller):
                        controller.triggerR]         # 5 = does nothing, triggerR/R2
         # Note : the joystickArr[4]/pitch is not used in walk mode
 
-        if controller.running_stop_mode and STOP_FLAG:
-            joystickArr = [0.000, 0.000, 0.000, 0.000, 0.000, 0.000]
+        # if controller.running_stop_mode and STOP_FLAG:
+        #     joystickArr = [0.000, 0.000, 0.000, 0.000, 0.000, 0.000]
 
-        if controller.running_autonomous_walk:
-            if not shared_queue.empty():
-                inferred_values = shared_queue.get() # update inferred values from lidar thread
-            joystickArr = inferred_values # set joystickArr equal regardless of updating inferred_values
+        # if controller.running_autonomous_walk:
+        #     if not shared_queue.empty():
+        #         inferred_values = shared_queue.get() # update inferred values from lidar thread
+        #     joystickArr = inferred_values # set joystickArr equal regardless of updating inferred_values
             # Note: inferred values gets updated slower than data is output to teensy
 
         # print("Joystick values:", joystickArr)
 
         # remap values to range between 0 and 2 (controller outputs -1 to 1)
         for x in range(len(joystickArr)):
-            joystickArr[x] += 1
+            joystickArr[x] += 1.000
         
         # Send data to the connected USB serial device
         data = '''J0:{0:.3f},J1:{1:.3f},J2:{2:.3f},J3:{3:.3f},J4:{4:.3f},J5:{5:.3f},M:{6},LD:{7},RD:{8},UD:{9},DD:{10},Sq:{11},Tr:{12},Ci:{13},Xx:{14},Sh:{15},Op:{16},Ps:{17},L3:{18},R3:{19},#'''.format(joystickArr[0], joystickArr[1], joystickArr[2], joystickArr[3], joystickArr[4], joystickArr[5],
