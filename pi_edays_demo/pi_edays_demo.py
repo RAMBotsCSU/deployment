@@ -440,7 +440,7 @@ def driver_thread_funct(controller):
         controller.miscButtonArr[3], controller.miscButtonArr[4])
 
         response = serial_read_write(data, ser)
-        # print("Output:", response)
+        print("Output:", response)
 
 
 
@@ -528,6 +528,7 @@ def lidar_thread_funct(controller):
     for scan in lidar.iter_scans():
         for (_, angle, distance) in scan:
             scan_data[min([359, int(angle)])] = distance 
+        process_data(scan_data)
 
         if controller.running_stop_mode:
 
@@ -539,6 +540,7 @@ def lidar_thread_funct(controller):
                     avg_dist = update_avg_dist(dist_buffer) # get average of all data sets
                     if min(avg_dist) <= red_dot_threshold: # any distance within stop proximity?
                         STOP_FLAG = True
+                        print("Signal Stop.")
                     else:
                         STOP_FLAG = False
                         
