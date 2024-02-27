@@ -428,7 +428,7 @@ def driver_thread_funct(controller):
         # print("Joystick values:", joystickArr)
 
         # remap values to range between 0 and 2 (controller outputs -1 to 1)
-        for x in range(joystickArr):
+        for x in range(len(joystickArr)):
             joystickArr[x] += 1
         
         # Send data to the connected USB serial device
