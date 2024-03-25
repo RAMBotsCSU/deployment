@@ -465,8 +465,6 @@ def lidar_thread_funct(controller):
     interpreter = edgetpu.make_interpreter(model_path, device='usb')
     interpreter.allocate_tensors()
 
-
-
     # CSV file name
     output_file = 'lidar_data.csv'
 
@@ -481,9 +479,8 @@ def lidar_thread_funct(controller):
             print("Error connecting to lidar. Trying again")
 
     # Define Parameters for Map
-    red_dot_threshold = 1000 # 500=.5m (?); threshhold for detecting close object
-    white_dot_threshold = 5000 # furthest pointed picked up by lidar
-
+    red_dot_threshold = 500 # 500=.5m (?); threshhold for detecting close object
+    white_dot_threshold = 5000 # furthest distance factored into calculations
             
     max_distance = 0
 
@@ -500,12 +497,15 @@ def lidar_thread_funct(controller):
                 x = distance * cos(radians)
                 y = distance * sin(radians)
                 point = (160 + int(x / max_distance * 119), 120 + int(y / max_distance * 119))
-                lcd.set_at(point, pygame.Color(255, 255, 255))
+                if distance < red_dot_threshold:
+                    lcd.set_at(point, pygame.Color(255, 0, 0))
+                else if distance < white_dot_threshold:
+                    lcd.set_at(point, pygame.Color(255, 255, 255))
             processed_data.append(distance)
         pygame.display.update()
         return processed_data
     
-    scan_data = [0] * 360
+    scan_data = [white_dot_threshold] * 360
     lidar_data = []
     start_time = 0
     joystickArr = [0.000, 0.000, 0.000, 0.000, 0.000, 0.000]
