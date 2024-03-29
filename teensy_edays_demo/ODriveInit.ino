@@ -4,11 +4,11 @@
   //**************************************************************************
 
 void modifyGains() {  // this function turns up the gains when it is executed (menu option 4 via the remote)
-  float posGainKnee = 20.0 * 1.0;
-  float posGainHips = 60.0 * 1.0;
+  float posGainKnee = 17.5 * 1.0;
+  float posGainHips = 50.0 * 1.0;
   float posGainShoulder = 20.0 * 1.0;
   float velGain = 0.1;
-  float integrator = 0.2;
+  float integrator = 0.08;
 
   Serial1 << "w axis" << 0 << ".controller.config.pos_gain " << posGainHips << '\n';
   Serial1 << "w axis" << 1 << ".controller.config.pos_gain " << posGainHips << '\n';
