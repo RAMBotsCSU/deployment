@@ -499,7 +499,7 @@ def lidar_thread_funct(controller):
                 point = (160 + int(x / max_distance * 119), 120 + int(y / max_distance * 119))
                 if distance < red_dot_threshold:
                     lcd.set_at(point, pygame.Color(255, 0, 0))
-                else if distance < white_dot_threshold:
+                elif distance < white_dot_threshold:
                     lcd.set_at(point, pygame.Color(255, 255, 255))
             processed_data.append(distance)
         pygame.display.update()
