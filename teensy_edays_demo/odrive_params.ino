@@ -135,12 +135,12 @@ void getControllerParams(ODriveArduino& odrive, HardwareSerial& serial, String a
   // int controllerParamNum = 28;
 
   String controllerParams[] = {
-                            "pos_gain",
+                            // "pos_gain",
                             "vel_gain",
                             "vel_integrator_gain",
                             "vel_limit",
                             };
-  int controllerParamNum = 4;
+  int controllerParamNum = 3;
 
   for (int i=0; i < controllerParamNum; i++) {
     String piCommand = axis + " controller.config." + controllerParams[i];
