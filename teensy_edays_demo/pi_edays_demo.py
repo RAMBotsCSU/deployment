@@ -23,7 +23,6 @@ from pycoral.utils import edgetpu
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
 import time
-import sys
 
 shared_queue = queue.Queue() # for sharing data accross two threads
 lidar_view = []
@@ -31,9 +30,6 @@ lidar_view = []
 sg.theme('DarkGreen2')
 
 table = None
-
-# Get the process ID of the current process
-pid = os.getpid()
 
 # Slider settings
 slider_min = 0
@@ -191,14 +187,6 @@ if (AUDIO_ENABLED):
     # merged_sounds = [mergedHi1, mergedHi2, mergedHi3]
     # mode_sounds = [walkMode,walkAlternate,pushUpsMode,pushUpsAlternate,legControlMode,legControlAlternate,gyroMode,gyroAlternate,machineLearningMode,machineLearningAlternate]
     # songs = [song1,song2,song3,song4]
-
-
-def kill_program():
-    # Send SIGTERM signal
-    os.kill(pid, signal.SIGTERM)
-
-    # Or send SIGINT signal (equivalent to pressing Ctrl+C)
-    os.kill(pid, signal.SIGINT) 
 
 
 def playSound(soundStr):
@@ -385,50 +373,6 @@ def joey_trigger_map_to_range(value):
     newValue = (value+168)/65366
     return newValue
 
-def value_checker(odrive_values, correct_values):
-    #checks the values against the correct values
-
-    if (type(odrive_values) is not dict):
-        return (False, {"Error": "value_checker: nested dictionary was not passed in"})
-
-    error_dict = {}
-
-    if (odrive_values == correct_values):
-        return (True, {})
-    
-    
-    for key, expected_value in correct_values.items():
-        actual_value = odrive_values[key]
-
-        if (actual_value != expected_value):
-            error_dict[key] = actual_value
-
-    return (len(error_dict) == 0, error_dict)
-        
-def check_odrive_params(input_dict):
-    correct_values_axis0 = {'encoder.config.abs_spi_cs_gpio_pin': '7.00', 'encoder.config.cpr': '16384.00', 'encoder.config.mode': '257.00', 'motor.config.current_lim': '22.00', 'motor.config.current_lim_margin': '9.00', 'motor.config.pole_pairs': '20.00', 'motor.config.torque_constant': '0.03', 'controller.config.pos_gain': '50.00', 'controller.config.vel_gain': '0.10', 'controller.config.vel_integrator_gain': '0.08', 'controller.config.vel_limit': ''}
-    correct_values_axis1 = {'encoder.config.abs_spi_cs_gpio_pin': '8.00', 'encoder.config.cpr': '16384.00', 'encoder.config.mode': '257.00', 'motor.config.current_lim': '22.00', 'motor.config.current_lim_margin': '9.00', 'motor.config.pole_pairs': '20.00', 'motor.config.torque_constant': '0.03', 'controller.config.pos_gain': '50.00', 'controller.config.vel_gain': '0.10', 'controller.config.vel_integrator_gain': '0.08', 'controller.config.vel_limit': ''}
-
-    error_list = []
-    for odrivename, odrivedict in input_dict.items():
-        for axisname, axisdict in odrivedict.items():
-            if axisname == "axis0":
-                axis_correct_dict = correct_values_axis0
-            else:
-                axis_correct_dict = correct_values_axis1
-            
-            output = value_checker(axisdict, axis_correct_dict)
-
-            if output[0] is False:
-                value_checker_dict = output[1]
-
-                for param, value in value_checker_dict.items():
-                    error_string = "In " + odrivename + ", " + axisname + ": "
-                    error_string += param + " is " + value + ", should be: " + axis_correct_dict[param]
-                    error_list.append(error_string)
-    
-    return (len(error_list) == 0, error_list)
-
 def padStr(val):
     for _ in range (120-len(val)):
         val = val + "~"
@@ -444,13 +388,10 @@ def rmPadStr(val):
 
 def serial_read_write(string, ser): # use time library to call every 10 ms in separate thread
     ser.write(padStr(string).encode())
-    return getLineSerial(ser)
-
-def getLineSerial(ser):
-    line = str(ser.readline())
-    line = line[2:-5]
-    line = rmPadStr(line)
-    return line
+    inp = str(ser.readline())
+    inp = inp[2:-5]
+    inp = rmPadStr(inp)
+    return inp
 
 def driver_thread_funct(controller):
     global STOP_FLAG
@@ -461,14 +402,6 @@ def driver_thread_funct(controller):
     gui_update_counter = 0
     inferred_values = [0.000, 0.000, 0.000, 0.000, 0.000, 0.000] # gets updated by machine learning inference
     
-    curr_odrive = ""
-    odrive_params = {"odrive1": {"axis0":{}, "axis1": {}},}
-                    #  "odrive2": {"axis0":{}, "axis1": {}},
-                    #  "odrive3": {"axis0":{}, "axis1": {}},
-                    #  "odrive4": {"axis0":{}, "axis1": {}},
-                    #  "odrive5": {"axis0":{}, "axis1": {}},
-                    #  "odrive6": {"axis0":{}, "axis1": {}}}
-
     #running section
     while True:
 
@@ -510,47 +443,6 @@ def driver_thread_funct(controller):
         response = serial_read_write(data, ser)
         # print("Output:", response)
 
-        if (runningMode == 6):
-            line = getLineSerial(ser)
-            if ("odrive" in line):
-                # Header print statement indicating which odrive is being dumped
-                curr_odrive = line
-
-                while True:
-                    line = getLineSerial(ser)
-
-                    print(line)
-                    if ("END" in line):
-                        runningMode = 0
-                        controller.mode = 0
-                        print("Params:",odrive_params)
-                        hasNoError, errorMsgs = check_odrive_params(odrive_params)
-                        if (not hasNoError):
-                            for msg in errorMsgs:
-                                print(msg)
-                            kill_program()
-                            sys.exit()
-                            
-                        else:
-                            print("Odrive params all good!")
-                        break
-
-                    elif ("odrive" in line):
-                        # Header print statement indicating which odrive is being dumped
-                        curr_odrive = line
-
-                    else:
-                        data_return_val_num = len(line.split(" "))
-                        if data_return_val_num == 2:
-                            key = line.split(" ")[0]
-                            value = line.split(" ")[1]
-                            odrive_params[curr_odrive][key] = value
-                        elif data_return_val_num == 3:
-                            axis = line.split(" ")[0]
-                            key = line.split(" ")[1]
-                            value = line.split(" ")[2]
-                            odrive_params[curr_odrive][axis][key] = value
-
 
 
        # time.sleep(0.01)
@@ -585,7 +477,6 @@ def lidar_thread_funct(controller):
             break
         except:
             print("Error connecting to lidar. Trying again")
-            time.sleep(0.1)
 
     # Define Parameters for Map
     red_dot_threshold = 500 # 500=.5m (?); threshhold for detecting close object
@@ -608,7 +499,7 @@ def lidar_thread_funct(controller):
                 point = (160 + int(x / max_distance * 119), 120 + int(y / max_distance * 119))
                 if distance < red_dot_threshold:
                     lcd.set_at(point, pygame.Color(255, 0, 0))
-                elif distance < white_dot_threshold:
+                else if distance < white_dot_threshold:
                     lcd.set_at(point, pygame.Color(255, 255, 255))
             processed_data.append(distance)
         pygame.display.update()
@@ -628,13 +519,12 @@ def lidar_thread_funct(controller):
 
     # avg_dist is updated to the average data set of all data sets in dist_buffer
     def update_avg_dist(dist_buffer):
-        temp_avg = [white_dot_threshold]*(int(360/5))
-        for angle_step in range(0, 360, 5):                            # 360 angle values
+        temp_avg = [white_dot_threshold]*360
+        for angle in range(359):                            # 360 angle values
             dist_sum = 0                                    # temp hold distance sum of each angle
-            for i in range(5):
-                for arr in dist_buffer:                     # check same angle of each data set
-                    dist_sum += arr[angle_step + i]                  # sum all distances at one angle
-            temp_avg[angle_step] = dist_sum / (len(dist_buffer)*5) # average distance by size of dist_buffer
+            for arr in dist_buffer:                         # check same angle of each data set
+                dist_sum += arr[angle]                      # sum all distances at one angle
+            temp_avg[angle] = dist_sum / len(dist_buffer)   # average distance by size of dist_buffer
         return temp_avg
 
     for scan in lidar.iter_scans():
@@ -694,7 +584,7 @@ class MyController(Controller):
         self.triggerL = 0
         self.triggerR = 0
         self.modeMax = 5
-        self.mode = 6
+        self.mode = 0
         self.dpadArr = [0,0,0,0] #L,R,U,D
         self.shapeButtonArr = [0,0,0,0] #Sq, Tr, Cir, X
         self.miscButtonArr = [0,0,0,0,0] #Share, Options, PS, L3, R3
