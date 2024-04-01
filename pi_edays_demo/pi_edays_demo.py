@@ -236,7 +236,7 @@ def gui_table_handler(controller): # update the GUI table with controller inputs
             update_table_cell(table, 6, 1, f"□:{controller.shapeButtonArr[0]}  △:{controller.shapeButtonArr[1]}  ○:{controller.shapeButtonArr[2]}  X:{controller.shapeButtonArr[3]}")
             update_table_cell(table, 7, 1, f"Sh:{controller.miscButtonArr[0]},Op:{controller.miscButtonArr[1]},Ps:{controller.miscButtonArr[2]},L3:{controller.miscButtonArr[3]},R3:{controller.miscButtonArr[4]}"
             )
-        time.sleep(0.1)
+        # time.sleep(0.1)
 
 
 
