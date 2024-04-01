@@ -32,6 +32,9 @@ sg.theme('DarkGreen2')
 
 table = None
 
+# Get the process ID of the current process
+pid = os.getpid()
+
 # Slider settings
 slider_min = 0
 slider_max = 100
@@ -188,6 +191,14 @@ if (AUDIO_ENABLED):
     # merged_sounds = [mergedHi1, mergedHi2, mergedHi3]
     # mode_sounds = [walkMode,walkAlternate,pushUpsMode,pushUpsAlternate,legControlMode,legControlAlternate,gyroMode,gyroAlternate,machineLearningMode,machineLearningAlternate]
     # songs = [song1,song2,song3,song4]
+
+
+def kill_program():
+    # Send SIGTERM signal
+    os.kill(pid, signal.SIGTERM)
+
+    # Or send SIGINT signal (equivalent to pressing Ctrl+C)
+    os.kill(pid, signal.SIGINT) 
 
 
 def playSound(soundStr):
@@ -517,7 +528,9 @@ def driver_thread_funct(controller):
                         if (not hasNoError):
                             for msg in errorMsgs:
                                 print(msg)
+                            kill_program()
                             sys.exit()
+                            
                         else:
                             print("Odrive params all good!")
                         break
