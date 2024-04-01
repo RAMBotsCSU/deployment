@@ -236,7 +236,7 @@ def gui_table_handler(controller): # update the GUI table with controller inputs
             update_table_cell(table, 6, 1, f"□:{controller.shapeButtonArr[0]}  △:{controller.shapeButtonArr[1]}  ○:{controller.shapeButtonArr[2]}  X:{controller.shapeButtonArr[3]}")
             update_table_cell(table, 7, 1, f"Sh:{controller.miscButtonArr[0]},Op:{controller.miscButtonArr[1]},Ps:{controller.miscButtonArr[2]},L3:{controller.miscButtonArr[3]},R3:{controller.miscButtonArr[4]}"
             )
-        # time.sleep(0.1)
+        time.sleep(0.1)
 
 
 
@@ -406,8 +406,8 @@ def value_checker(odrive_values, correct_values):
     return (len(error_dict) == 0, error_dict)
         
 def check_odrive_params(input_dict):
-    correct_values_axis0 = {'encoder.config.abs_spi_cs_gpio_pin': '7.00', 'encoder.config.cpr': '16384.00', 'encoder.config.mode': '257.00', 'motor.config.current_lim': '22.00', 'motor.config.current_lim_margin': '9.00', 'motor.config.pole_pairs': '20.00', 'motor.config.torque_constant': '0.03', 'controller.config.vel_gain': '0.10', 'controller.config.vel_integrator_gain': '0.08', 'controller.config.vel_limit': ''}
-    correct_values_axis1 = {'encoder.config.abs_spi_cs_gpio_pin': '8.00', 'encoder.config.cpr': '16384.00', 'encoder.config.mode': '257.00', 'motor.config.current_lim': '22.00', 'motor.config.current_lim_margin': '9.00', 'motor.config.pole_pairs': '20.00', 'motor.config.torque_constant': '0.03', 'controller.config.vel_gain': '0.10', 'controller.config.vel_integrator_gain': '0.08', 'controller.config.vel_limit': ''}
+    correct_values_axis0 = {'encoder.config.abs_spi_cs_gpio_pin': '7.00', 'encoder.config.cpr': '16384.00', 'encoder.config.mode': '257.00', 'motor.config.current_lim': '22.00', 'motor.config.current_lim_margin': '9.00', 'motor.config.pole_pairs': '20.00', 'motor.config.torque_constant': '0.03', 'controller.config.pos_gain': '50.00', 'controller.config.vel_gain': '0.10', 'controller.config.vel_integrator_gain': '0.08', 'controller.config.vel_limit': ''}
+    correct_values_axis1 = {'encoder.config.abs_spi_cs_gpio_pin': '8.00', 'encoder.config.cpr': '16384.00', 'encoder.config.mode': '257.00', 'motor.config.current_lim': '22.00', 'motor.config.current_lim_margin': '9.00', 'motor.config.pole_pairs': '20.00', 'motor.config.torque_constant': '0.03', 'controller.config.pos_gain': '50.00', 'controller.config.vel_gain': '0.10', 'controller.config.vel_integrator_gain': '0.08', 'controller.config.vel_limit': ''}
 
     error_list = []
     for odrivename, odrivedict in input_dict.items():
@@ -562,7 +562,8 @@ def lidar_thread_funct(controller):
     # Set up pygame and the display
     os.putenv('SDL_FBDEV', '/dev/fb1')
     pygame.init()
-    lcd = pygame.display.set_mode((320,240))
+    map_width = 500 # printed map size
+    lcd = pygame.display.set_mode((map_width))
     # pygame.mouse.set_visible(False)
     lcd.fill((0,0,0))
     pygame.display.update()
@@ -588,29 +589,39 @@ def lidar_thread_funct(controller):
             time.sleep(0.1)
 
     # Define Parameters for Map
-    red_dot_threshold = 500 # 500=.5m (?); threshhold for detecting close object
-    white_dot_threshold = 5000 # furthest distance factored into calculations
-            
-    max_distance = 0
+    red_dot_threshold = 200 # 500=.5m (?); threshhold for detecting close object
+    white_dot_threshold = 2000 # furthest distance factored into calculations
+    scale_data = int(white_dot_threshold/map_width) # scale of real data to printed map
+  
 
     def process_data(data):
-        nonlocal max_distance
         lcd.fill((0,0,0))
         # Initialize a list to store Lidar data
         processed_data = []
         for angle in range(360):
             distance = float(data[angle])
             if distance > 0:                  # ignore initially ungathered data points
-                max_distance = max([min([5000, distance]), max_distance])
                 radians = angle * pi / 180.0
                 x = distance * cos(radians)
                 y = distance * sin(radians)
-                point = (160 + int(x / max_distance * 119), 120 + int(y / max_distance * 119))
+                point = (int(int(x)/scale_data + map_width/2), int(int(y)/scale_data + map_width/2))
                 if distance < red_dot_threshold:
                     lcd.set_at(point, pygame.Color(255, 0, 0))
                 elif distance < white_dot_threshold:
                     lcd.set_at(point, pygame.Color(255, 255, 255))
             processed_data.append(distance)
+        pygame.draw.line(lcd, pygame.Color(255,255,255), (0, map_width/2), (map_width, map_width/2), 1)
+        pygame.draw.line(lcd, pygame.Color(255,255,255), (map_width/2, 0), (map_width/2, map_width), 1)
+        for i in range(int(map_width%(500/scale_data)), map_width, int(500/scale_data)): # tick every .5 meters
+            if i == 0 or i == map_width/2:
+                continue
+            pygame.draw.line(lcd, pygame.Color(255, 255, 255), (i, (map_width/2)+2), (i, (map_width/2)-2), 2) # x-ticks
+            pygame.draw.line(lcd, pygame.Color(255, 255, 255), ((map_width/2)+2, i), ((map_width/2)-2, i), 2) # y-ticks
+            label = str((i - int(map_width/2))*scale_data/1000)
+            font = pygame.font.SysFont(None, 12)
+            text = font.render(label, True, (255, 255, 255))
+            lcd.blit(text, (map_width/2 + 5, i - 5))
+            lcd.blit(text, (i - 5, map_width/2 - 10))
         pygame.display.update()
         return processed_data
     
@@ -694,7 +705,7 @@ class MyController(Controller):
         self.triggerL = 0
         self.triggerR = 0
         self.modeMax = 5
-        self.mode = 0
+        self.mode = 6
         self.dpadArr = [0,0,0,0] #L,R,U,D
         self.shapeButtonArr = [0,0,0,0] #Sq, Tr, Cir, X
         self.miscButtonArr = [0,0,0,0,0] #Share, Options, PS, L3, R3
