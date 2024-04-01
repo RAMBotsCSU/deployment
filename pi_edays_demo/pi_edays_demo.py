@@ -23,6 +23,7 @@ from pycoral.utils import edgetpu
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
 import time
+import sys
 
 shared_queue = queue.Queue() # for sharing data accross two threads
 lidar_view = []
@@ -516,7 +517,7 @@ def driver_thread_funct(controller):
                         if (not hasNoError):
                             for msg in errorMsgs:
                                 print(msg)
-                            exit()
+                            sys.exit()
                         else:
                             print("Odrive params all good!")
                         break
