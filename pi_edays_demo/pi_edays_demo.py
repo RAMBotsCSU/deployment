@@ -571,6 +571,7 @@ def lidar_thread_funct(controller):
             break
         except:
             print("Error connecting to lidar. Trying again")
+            time.sleep(0.1)
 
     # Define Parameters for Map
     red_dot_threshold = 500 # 500=.5m (?); threshhold for detecting close object
