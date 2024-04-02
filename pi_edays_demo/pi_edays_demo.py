@@ -563,7 +563,7 @@ def lidar_thread_funct(controller):
     os.putenv('SDL_FBDEV', '/dev/fb1')
     pygame.init()
     map_width = 500 # printed map size
-    lcd = pygame.display.set_mode((map_width))
+    lcd = pygame.display.set_mode((map_width, map_width))
     # pygame.mouse.set_visible(False)
     lcd.fill((0,0,0))
     pygame.display.update()
