@@ -562,7 +562,7 @@ def lidar_thread_funct(controller):
     # Set up pygame and the display
     os.putenv('SDL_FBDEV', '/dev/fb1')
     pygame.init()
-    map_width = 500 # printed map size
+    map_width = 800 # printed map size
     lcd = pygame.display.set_mode((map_width, map_width))
     # pygame.mouse.set_visible(False)
     lcd.fill((0,0,0))
@@ -589,8 +589,8 @@ def lidar_thread_funct(controller):
             time.sleep(0.1)
 
     # Define Parameters for Map
-    red_dot_threshold = 200 # 500=.5m (?); threshhold for detecting close object
-    white_dot_threshold = 2000 # furthest distance factored into calculations
+    red_dot_threshold = 400 # 500=.5m (?); threshhold for detecting close object
+    white_dot_threshold = 4000 # furthest distance factored into calculations
     scale_data = int(white_dot_threshold/map_width) # scale of real data to printed map
   
 
@@ -604,24 +604,25 @@ def lidar_thread_funct(controller):
                 radians = angle * pi / 180.0
                 x = distance * cos(radians)
                 y = distance * sin(radians)
-                point = (int(int(x)/scale_data + map_width/2), int(int(y)/scale_data + map_width/2))
-                if distance < red_dot_threshold:
+                point = (int(x/scale_data) + int(map_width/2), int(y/scale_data) + int(map_width/2))
+                if distance <= red_dot_threshold:
                     lcd.set_at(point, pygame.Color(255, 0, 0))
-                elif distance < white_dot_threshold:
+                elif distance <= white_dot_threshold:
                     lcd.set_at(point, pygame.Color(255, 255, 255))
             processed_data.append(distance)
         pygame.draw.line(lcd, pygame.Color(255,255,255), (0, map_width/2), (map_width, map_width/2), 1)
         pygame.draw.line(lcd, pygame.Color(255,255,255), (map_width/2, 0), (map_width/2, map_width), 1)
-        for i in range(int(map_width%(500/scale_data)), map_width, int(500/scale_data)): # tick every .5 meters
-            if i == 0 or i == map_width/2:
+        for i in range(-int(white_dot_threshold - (white_dot_threshold%500)), white_dot_threshold, 500): # tick every .5 meters
+            if i == 0 or i == -white_dot_threshold:
                 continue
-            pygame.draw.line(lcd, pygame.Color(255, 255, 255), (i, (map_width/2)+2), (i, (map_width/2)-2), 2) # x-ticks
-            pygame.draw.line(lcd, pygame.Color(255, 255, 255), ((map_width/2)+2, i), ((map_width/2)-2, i), 2) # y-ticks
-            label = str((i - int(map_width/2))*scale_data/1000)
+            tick_placement = int(i/scale_data)
+            pygame.draw.line(lcd, pygame.Color(255, 255, 255), (tick_placement, (map_width/2)+2), (tick_placement, (map_width/2)-2), 1) # x-ticks
+            pygame.draw.line(lcd, pygame.Color(255, 255, 255), ((map_width/2)+2, tick_placement), ((map_width/2)-2, tick_placement), 1) # y-ticks
+            label = str((tick_placement - int(map_width/2))*scale_data/1000)
             font = pygame.font.SysFont(None, 12)
             text = font.render(label, True, (255, 255, 255))
-            lcd.blit(text, (map_width/2 + 5, i - 5))
-            lcd.blit(text, (i - 5, map_width/2 - 10))
+            lcd.blit(text, (map_width/2 + 5, tick_placement - 5)) # x-axis
+            lcd.blit(text, (tick_placement - 5, map_width/2 + 5)) # y-axis
         pygame.display.update()
         return processed_data
     
@@ -634,7 +635,7 @@ def lidar_thread_funct(controller):
     starttime = time.time()
     window = 10
     # dist = [white_dot_threshold]*360 # stores lidar distances
-    avg_dist = [white_dot_threshold]*360 # stores moving averages
+    avg_dist = [white_dot_threshold]*int(360/5) # stores moving averages
     dist_buffer = [[]*360]
 
     # avg_dist is updated to the average data set of all data sets in dist_buffer
