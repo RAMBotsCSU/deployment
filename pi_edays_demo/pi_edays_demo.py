@@ -11,6 +11,7 @@ import subprocess
 import os
 import pygame
 from pygame import mixer
+from pygame import font
 import random
 from serial.serialutil import SerialException
 import PySimpleGUI as sg
