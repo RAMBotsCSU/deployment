@@ -570,7 +570,7 @@ def lidar_thread_funct(controller):
 
 
     #Create variables
-    model_path = 'machine_learning/lidar_model_quantized_edgetpu.tflite'
+    model_path = '../../machine_learning/lidar_model_quantized_edgetpu.tflite'
     interpreter = edgetpu.make_interpreter(model_path, device='usb')
     interpreter.allocate_tensors()
 
