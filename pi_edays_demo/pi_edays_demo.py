@@ -1,7 +1,3 @@
-#TODO:
-#implement teensy_serial_main_demo [MAKE SURE TO SUBTRACT 1 FROM MOVEMENT ARR VALUES]
-#add trigger lock and roll
-#add bountds to mode 0=walk, 1=pushups, 2=left side right side control, 3=machine learning????, 4=gyro demo
 
 from pyPS4Controller.controller import Controller
 import serial
@@ -510,7 +506,9 @@ def driver_thread_funct(controller):
         response = serial_read_write(data, ser)
         # print("Output:", response)
 
-        if (runningMode == 6):
+        timesRun = 0
+        if (runningMode == 6 and timesRun < 1):
+            timesRun += 1
             line = getLineSerial(ser)
             if ("odrive" in line):
                 # Header print statement indicating which odrive is being dumped
