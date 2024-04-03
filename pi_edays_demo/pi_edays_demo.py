@@ -605,7 +605,7 @@ def lidar_thread_funct(controller):
                 radians = angle * pi / 180.0
                 x = distance * cos(radians)
                 y = distance * sin(radians)
-                point = (int(x/scale_data) + int(map_width/2), int(y/scale_data) + int(map_width/2))
+                point = (int(int(x)/scale_data + map_width/2), int(int(y)/scale_data + map_width/2))
                 if distance <= red_dot_threshold:
                     lcd.set_at(point, pygame.Color(255, 0, 0))
                 elif distance <= white_dot_threshold:
@@ -636,7 +636,7 @@ def lidar_thread_funct(controller):
     starttime = time.time()
     window = 10
     # dist = [white_dot_threshold]*360 # stores lidar distances
-    avg_dist = [white_dot_threshold]*int(360/5) # stores moving averages
+    avg_dist = [white_dot_threshold]*(int(360/5)) # stores moving averages
     dist_buffer = [[]*360]
 
     # avg_dist is updated to the average data set of all data sets in dist_buffer
