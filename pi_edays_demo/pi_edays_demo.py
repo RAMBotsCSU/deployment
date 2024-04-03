@@ -651,7 +651,7 @@ def lidar_thread_funct(controller):
         return temp_avg
 
     for scan in lidar.iter_scans():
-        for (_, angle, distance) in scan:
+        for (_, _, angle, distance) in scan:
             scan_data[min([359, int(angle)])] = distance 
         process_data(scan_data)
 
