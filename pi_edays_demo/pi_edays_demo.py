@@ -640,7 +640,7 @@ def lidar_thread_funct(controller):
 
     # avg_dist is updated to the average data set of all data sets in dist_buffer
     def update_avg_dist(dist_buffer):
-        temp_avg = [white_dot_threshold]*(int(360/5))
+        temp_avg = [white_dot_threshold]*360
         for angle_step in range(0, 360, 5):                            # 360 angle values
             dist_sum = 0                                    # temp hold distance sum of each angle
             for i in range(5):
