@@ -406,8 +406,8 @@ def value_checker(odrive_values, correct_values):
     return (len(error_dict) == 0, error_dict)
         
 def check_odrive_params(input_dict):
-    correct_values_axis0 = {'encoder.config.abs_spi_cs_gpio_pin': '7.00', 'encoder.config.cpr': '16384.00', 'encoder.config.mode': '257.00', 'motor.config.current_lim': '22.00', 'motor.config.current_lim_margin': '9.00', 'motor.config.pole_pairs': '20.00', 'motor.config.torque_constant': '0.03', 'controller.config.pos_gain': '50.00', 'controller.config.vel_gain': '0.10', 'controller.config.vel_integrator_gain': '0.08', 'controller.config.vel_limit': ''}
-    correct_values_axis1 = {'encoder.config.abs_spi_cs_gpio_pin': '8.00', 'encoder.config.cpr': '16384.00', 'encoder.config.mode': '257.00', 'motor.config.current_lim': '22.00', 'motor.config.current_lim_margin': '9.00', 'motor.config.pole_pairs': '20.00', 'motor.config.torque_constant': '0.03', 'controller.config.pos_gain': '50.00', 'controller.config.vel_gain': '0.10', 'controller.config.vel_integrator_gain': '0.08', 'controller.config.vel_limit': ''}
+    correct_values_axis0 = {'encoder.config.abs_spi_cs_gpio_pin': '7.00', 'encoder.config.cpr': '16384.00', 'encoder.config.mode': '257.00', 'motor.config.current_lim': '22.00', 'motor.config.current_lim_margin': '9.00', 'motor.config.pole_pairs': '20.00', 'motor.config.torque_constant': '0.03', 'controller.config.vel_gain': '0.10', 'controller.config.vel_integrator_gain': '0.08', 'controller.config.vel_limit': ''}
+    correct_values_axis1 = {'encoder.config.abs_spi_cs_gpio_pin': '8.00', 'encoder.config.cpr': '16384.00', 'encoder.config.mode': '257.00', 'motor.config.current_lim': '22.00', 'motor.config.current_lim_margin': '9.00', 'motor.config.pole_pairs': '20.00', 'motor.config.torque_constant': '0.03', 'controller.config.vel_gain': '0.10', 'controller.config.vel_integrator_gain': '0.08', 'controller.config.vel_limit': ''}
 
     error_list = []
     for odrivename, odrivedict in input_dict.items():
