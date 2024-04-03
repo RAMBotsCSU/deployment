@@ -462,12 +462,12 @@ def driver_thread_funct(controller):
     inferred_values = [0.000, 0.000, 0.000, 0.000, 0.000, 0.000] # gets updated by machine learning inference
     
     curr_odrive = ""
-    odrive_params = {"odrive1": {"axis0":{}, "axis1": {}},}
-                    #  "odrive2": {"axis0":{}, "axis1": {}},
-                    #  "odrive3": {"axis0":{}, "axis1": {}},
-                    #  "odrive4": {"axis0":{}, "axis1": {}},
-                    #  "odrive5": {"axis0":{}, "axis1": {}},
-                    #  "odrive6": {"axis0":{}, "axis1": {}}}
+    odrive_params = {"odrive1": {"axis0":{}, "axis1": {}},
+                     "odrive2": {"axis0":{}, "axis1": {}},
+                     "odrive3": {"axis0":{}, "axis1": {}},
+                     "odrive4": {"axis0":{}, "axis1": {}},
+                     "odrive5": {"axis0":{}, "axis1": {}},
+                     "odrive6": {"axis0":{}, "axis1": {}}}
 
     #running section
     while True:

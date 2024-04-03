@@ -411,16 +411,16 @@ void loop() {
       case 6:
         Serial.println("odrive1");
         getOdriveParams(odrive1, odrive1Serial);
-        // Serial.println("odrive2");
-        // getOdriveParams(odrive2, odrive2Serial);
-        // Serial.println("odrive3");
-        // getOdriveParams(odrive3, odrive3Serial);
-        // Serial.println("odrive4");
-        // getOdriveParams(odrive4, odrive4Serial);
-        // Serial.println("odrive5");
-        // getOdriveParams(odrive5, odrive5Serial);
-        // Serial.println("odrive6");
-        // getOdriveParams(odrive6, odrive6Serial);
+        Serial.println("odrive2");
+        getOdriveParams(odrive2, odrive2Serial);
+        Serial.println("odrive3");
+        getOdriveParams(odrive3, odrive3Serial);
+        Serial.println("odrive4");
+        getOdriveParams(odrive4, odrive4Serial);
+        Serial.println("odrive5");
+        getOdriveParams(odrive5, odrive5Serial);
+        Serial.println("odrive6");
+        getOdriveParams(odrive6, odrive6Serial);
         Serial.println("END");
         break;
       default:
