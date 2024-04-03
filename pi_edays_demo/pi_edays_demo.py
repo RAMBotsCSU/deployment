@@ -512,9 +512,10 @@ def driver_thread_funct(controller):
         response = serial_read_write(data, ser)
         # print("Output:", response)
 
-        if (not check_odrive_params):
-            runningMode = 6
+        if (not checked_odrive_params):
+            controller.mode = 6
         if (runningMode == 6):
+            checked_odrive_params = True
             line = getLineSerial(ser)
             if ("odrive" in line):
                 # Header print statement indicating which odrive is being dumped
