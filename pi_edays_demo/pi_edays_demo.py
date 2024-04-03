@@ -512,6 +512,7 @@ def driver_thread_funct(controller):
         # print("Output:", response)
 
         if (runningMode == 6):
+            print("IN HERE TEST tEST BTEST")
             line = getLineSerial(ser)
             if ("odrive" in line):
                 # Header print statement indicating which odrive is being dumped
