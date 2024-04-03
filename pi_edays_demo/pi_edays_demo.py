@@ -582,7 +582,7 @@ def lidar_thread_funct(controller):
     PORT_NAME = '/dev/ttyUSB0'
     while True:
         try:
-            lidar = RPLidar(None, PORT_NAME, timeout=3)
+            lidar = RPLidar(None, PORT_NAME, timeout=5)
             print("Lidar connected", lidar.info)
             break
         except:
