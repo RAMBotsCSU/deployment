@@ -449,6 +449,8 @@ def getLineSerial(ser):
     return line
 
 def driver_thread_funct(controller):
+    timesRun = 0
+    
     global STOP_FLAG
     playSound(random.choice(["startup1"]*19 + ["startup2"]*1)) # dont mind this line
     runningMode = 0
@@ -506,7 +508,6 @@ def driver_thread_funct(controller):
         response = serial_read_write(data, ser)
         # print("Output:", response)
 
-        timesRun = 0
         if (runningMode == 6 and timesRun < 1):
             timesRun += 1
             line = getLineSerial(ser)
