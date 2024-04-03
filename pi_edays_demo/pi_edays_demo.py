@@ -533,8 +533,8 @@ def driver_thread_funct(controller):
                         if (not hasNoError):
                             for msg in errorMsgs:
                                 print(msg)
-                            kill_program()
-                            sys.exit()
+                            # kill_program()
+                            # sys.exit()
                             
                         else:
                             print("Odrive params all good!")
