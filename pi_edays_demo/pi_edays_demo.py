@@ -613,17 +613,17 @@ def lidar_thread_funct(controller):
             processed_data.append(distance)
         pygame.draw.line(lcd, pygame.Color(255,255,255), (0, map_width/2), (map_width, map_width/2), 1)
         pygame.draw.line(lcd, pygame.Color(255,255,255), (map_width/2, 0), (map_width/2, map_width), 1)
-        for i in range(-int(white_dot_threshold - (white_dot_threshold%500)), white_dot_threshold, 500): # tick every .5 meters
+        for i in range(-white_dot_threshold + int(white_dot_threshold%500), white_dot_threshold, 500): # tick every .5 meters
             if i == 0 or i == -white_dot_threshold:
                 continue
-            tick_placement = int(i/scale_data)
+            tick_placement = int(i/(scale_data*2))+int(map_width/2)
             pygame.draw.line(lcd, pygame.Color(255, 255, 255), (tick_placement, (map_width/2)+2), (tick_placement, (map_width/2)-2), 1) # x-ticks
             pygame.draw.line(lcd, pygame.Color(255, 255, 255), ((map_width/2)+2, tick_placement), ((map_width/2)-2, tick_placement), 1) # y-ticks
-            label = str((tick_placement - int(map_width/2))*scale_data/1000)
+            label = str(i/1000)
             font = pygame.font.SysFont("arial", 12)
             text = font.render(label, True, (255, 255, 255))
-            lcd.blit(text, (map_width/2 + 5, tick_placement - 5)) # x-axis
-            lcd.blit(text, (tick_placement - 5, map_width/2 + 5)) # y-axis
+            lcd.blit(text, (int(map_width/2 + 5), tick_placement - 5)) # x-axis
+            lcd.blit(text, (tick_placement - 5, int(map_width/2 + 5))) # y-axis
         pygame.display.update()
         return processed_data
     
