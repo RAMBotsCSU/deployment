@@ -514,7 +514,7 @@ def driver_thread_funct(controller):
 
         if (not checked_odrive_params):
             controller.mode = 6
-        if (runningMode == 6):
+        if (runningMode == 6 and not checked_odrive_params):
             checked_odrive_params = True
             line = getLineSerial(ser)
             if ("odrive" in line):

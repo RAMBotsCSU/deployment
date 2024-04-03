@@ -1,6 +1,6 @@
 void getOdriveParams (ODriveArduino& odrive, HardwareSerial& serial) {
   // Serial.println("In Get odrive params");
-  odrive.readFloat(); // I think there is a value just waiting to be read from the odrive?
+  // odrive.readFloat(); // I think there is a value just waiting to be read from the odrive?
   getEncoderParams(odrive, serial, "axis0");
   getEncoderParams(odrive, serial, "axis1");
 
