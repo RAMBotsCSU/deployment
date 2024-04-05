@@ -73,7 +73,7 @@ window = sg.Window('RamBOTs', layout, size=(800, 420))
 
 STOP_FLAG = False
 
-AUDIO_ENABLED = False
+AUDIO_ENABLED = True
 audio_dict = {"startMLSound": None, 
               "stopMLSound": None,
               "walkMode": None,
@@ -469,7 +469,6 @@ def driver_thread_funct(controller):
                      "odrive4": {"axis0":{}, "axis1": {}},
                      "odrive5": {"axis0":{}, "axis1": {}},
                      "odrive6": {"axis0":{}, "axis1": {}}}
-    checked_odrive_params = False
 
     #running section
     while True:
@@ -512,11 +511,9 @@ def driver_thread_funct(controller):
         response = serial_read_write(data, ser)
         # print("Output:", response)
 
-        if (not checked_odrive_params):
-            controller.mode = 6
-        if (runningMode == 6 and not checked_odrive_params):
-            checked_odrive_params = True
+        if (runningMode == 6):
             line = getLineSerial(ser)
+            print(line)
             if ("odrive" in line):
                 # Header print statement indicating which odrive is being dumped
                 curr_odrive = line
