@@ -73,7 +73,7 @@ window = sg.Window('RamBOTs', layout, size=(800, 420))
 
 STOP_FLAG = False
 
-AUDIO_ENABLED = True
+AUDIO_ENABLED = False
 audio_dict = {"startMLSound": None, 
               "stopMLSound": None,
               "walkMode": None,
