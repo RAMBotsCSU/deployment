@@ -585,7 +585,7 @@ def lidar_thread_funct(controller):
     PORT_NAME = '/dev/ttyUSB0'
     while True:
         try:
-            lidar = RPLidar(None, PORT_NAME, timeout=10)
+            lidar = RPLidar(None, PORT_NAME, timeout=3)
             print("Lidar connected", lidar.info)
             break
         except:
@@ -710,7 +710,7 @@ class MyController(Controller):
         self.triggerL = 0
         self.triggerR = 0
         self.modeMax = 5
-        self.mode = 0
+        self.mode = 6
         self.dpadArr = [0,0,0,0] #L,R,U,D
         self.shapeButtonArr = [0,0,0,0] #Sq, Tr, Cir, X
         self.miscButtonArr = [0,0,0,0,0] #Share, Options, PS, L3, R3
