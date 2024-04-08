@@ -469,6 +469,7 @@ def driver_thread_funct(controller):
                      "odrive4": {"axis0":{}, "axis1": {}},
                      "odrive5": {"axis0":{}, "axis1": {}},
                      "odrive6": {"axis0":{}, "axis1": {}}}
+    hasCheckedOdrives = False
 
     #running section
     while True:
@@ -510,7 +511,9 @@ def driver_thread_funct(controller):
 
         response = serial_read_write(data, ser)
         # print("Output:", response)
-
+        if (not hasCheckedOdrives):
+            controller.mode = 6
+            hasCheckedOdrives = True
         if (runningMode == 6):
             line = getLineSerial(ser)
             print(line)
@@ -535,7 +538,6 @@ def driver_thread_funct(controller):
                             
                         else:
                             print("Odrive params all good!")
-                            line = getLineSerial(ser)
 
                         break
 
@@ -710,7 +712,7 @@ class MyController(Controller):
         self.triggerL = 0
         self.triggerR = 0
         self.modeMax = 5
-        self.mode = 6
+        self.mode = 0
         self.dpadArr = [0,0,0,0] #L,R,U,D
         self.shapeButtonArr = [0,0,0,0] #Sq, Tr, Cir, X
         self.miscButtonArr = [0,0,0,0,0] #Share, Options, PS, L3, R3
