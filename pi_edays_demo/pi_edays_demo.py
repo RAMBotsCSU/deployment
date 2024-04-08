@@ -523,18 +523,20 @@ def driver_thread_funct(controller):
 
                     print(line)
                     if ("END" in line):
-                        runningMode = 0
+                        # runningMode = 0
                         controller.mode = 0
                         print("Params:",odrive_params)
                         hasNoError, errorMsgs = check_odrive_params(odrive_params)
                         if (not hasNoError):
                             for msg in errorMsgs:
                                 print(msg)
-                            # kill_program()
-                            # sys.exit()
+                            kill_program()
+                            sys.exit()
                             
                         else:
                             print("Odrive params all good!")
+                            line = getLineSerial(ser)
+
                         break
 
                     elif ("odrive" in line):
