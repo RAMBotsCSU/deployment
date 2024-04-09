@@ -455,7 +455,7 @@ def getLineSerial(ser):
 
 def any_greater_than_one(arr):
     for value in arr:
-        if not value == 1.0:
+        if value > 1.1 or value < 0.9:
             return True
     return False
 
@@ -881,7 +881,7 @@ class MyController(Controller):
     def on_left_arrow_press(self):
         self.dpadArr[0] = 1
         if(self.mode == 0 and self.trim > -1):
-            self.trim -= 0.1
+            self.trim = round(self.trim - 0.1, 1)
 
     def on_left_right_arrow_release(self):
         self.dpadArr[0] = 0
@@ -890,7 +890,8 @@ class MyController(Controller):
     def on_right_arrow_press(self):
         self.dpadArr[1] = 1
         if(self.mode == 0 and self.trim < 1):
-            self.trim += 0.1
+            self.trim = round(self.trim + 0.1, 1)
+            
 
     def on_L3_press(self):
         self.miscButtonArr[3] = 1
