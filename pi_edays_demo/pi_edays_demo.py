@@ -225,7 +225,7 @@ def gui_table_handler(controller): # update the GUI table with controller inputs
     while True:
 
         if (controller.paused):
-            update_table_cell(table, 7, 1, "Sh:0,Op:0,Ps:1,L3:0,R3:0")
+            update_table_cell(table, 8, 1, "Sh:0,Op:0,Ps:1,L3:0,R3:0")
         else:
             table = window['-TABLE-']
             update_table_cell(table, 0, 1, f"{controller.l3_horizontal / 32767:5.2f}, {controller.l3_vertical / 32767:5.2f}")
@@ -235,8 +235,8 @@ def gui_table_handler(controller): # update the GUI table with controller inputs
             update_table_cell(table, 4, 1, f"{controller.mode}")
             update_table_cell(table, 5, 1, f"←:{controller.dpadArr[0]}  →:{controller.dpadArr[1]}  ↑:{controller.dpadArr[2]}  ↓:{controller.dpadArr[3]}")
             update_table_cell(table, 6, 1, f"□:{controller.shapeButtonArr[0]}  △:{controller.shapeButtonArr[1]}  ○:{controller.shapeButtonArr[2]}  X:{controller.shapeButtonArr[3]}")
-            update_table_cell(table, 7, 1, f"Sh:{controller.miscButtonArr[0]},Op:{controller.miscButtonArr[1]},Ps:{controller.miscButtonArr[2]},L3:{controller.miscButtonArr[3]},R3:{controller.miscButtonArr[4]}"
-            )
+            update_table_cell(table, 7, 1, f"Sh:{controller.miscButtonArr[0]},Op:{controller.miscButtonArr[1]},Ps:{controller.miscButtonArr[2]},L3:{controller.miscButtonArr[3]},R3:{controller.miscButtonArr[4]}")
+            update_table_cell(table, 8, 1, f"Trim: {controller.trim}")
         time.sleep(0.1)
 
 
@@ -500,6 +500,8 @@ def driver_thread_funct(controller):
         # remap values to range between 0 and 2 (controller outputs -1 to 1)
         for x in range(len(joystickArr)):
             joystickArr[x] += 1.000
+
+        joystickArr[3] += controller.trim
         
         # Send data to the connected USB serial device
         data = '''J0:{0:.3f},J1:{1:.3f},J2:{2:.3f},J3:{3:.3f},J4:{4:.3f},J5:{5:.3f},M:{6},LD:{7},RD:{8},UD:{9},DD:{10},Sq:{11},Tr:{12},Ci:{13},Xx:{14},Sh:{15},Op:{16},Ps:{17},L3:{18},R3:{19},#'''.format(joystickArr[0], joystickArr[1], joystickArr[2], joystickArr[3], joystickArr[4], joystickArr[5],
@@ -720,6 +722,7 @@ class MyController(Controller):
         self.running_ML = False
         self.running_autonomous_walk = False
         self.running_stop_mode = False
+        self.trim = 0.0
 
     def on_L3_up(self, value):
         if (abs(value) > self.deadzone):
@@ -870,6 +873,8 @@ class MyController(Controller):
 
     def on_left_arrow_press(self):
         self.dpadArr[0] = 1
+        if(self.mode == 0 and not trim <= -1):
+            trim -= 0.1
 
     def on_left_right_arrow_release(self):
         self.dpadArr[0] = 0
@@ -877,6 +882,8 @@ class MyController(Controller):
 
     def on_right_arrow_press(self):
         self.dpadArr[1] = 1
+        if(self.mode == 0 and not trim <= 1):
+            trim += 0.1
 
     def on_L3_press(self):
         self.miscButtonArr[3] = 1
