@@ -881,7 +881,7 @@ class MyController(Controller):
     def on_left_arrow_press(self):
         self.dpadArr[0] = 1
         if(self.mode == 0 and self.trim > -1):
-            self.trim = round(self.trim - 0.1, 1)
+            self.trim = round(self.trim - 0.01, 1)
 
     def on_left_right_arrow_release(self):
         self.dpadArr[0] = 0
@@ -890,7 +890,7 @@ class MyController(Controller):
     def on_right_arrow_press(self):
         self.dpadArr[1] = 1
         if(self.mode == 0 and self.trim < 1):
-            self.trim = round(self.trim + 0.1, 1)
+            self.trim = round(self.trim + 0.01, 1)
             
 
     def on_L3_press(self):

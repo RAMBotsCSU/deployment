@@ -4,9 +4,9 @@
   //**************************************************************************
 
 void modifyGains() {  // this function turns up the gains when it is executed (menu option 4 via the remote)
-  float posGainKnee = 17.5 * 1.0;
-  float posGainHips = 50.0 * 1.0;
-  float posGainShoulder = 20.0 * 1.0;
+  float posGainKnee = 17.5;
+  float posGainHips = 50.0;
+  float posGainShoulder = 20.0;
   float velGain = 0.1;
   float integrator = 0.08;
 
