@@ -453,6 +453,12 @@ def getLineSerial(ser):
     line = rmPadStr(line)
     return line
 
+def any_greater_than_one(arr):
+    for value in arr:
+        if not value == 1.0:
+            return True
+    return False
+
 def driver_thread_funct(controller):
     global STOP_FLAG
     playSound(random.choice(["startup1"]*19 + ["startup2"]*1)) # dont mind this line
@@ -501,7 +507,8 @@ def driver_thread_funct(controller):
         for x in range(len(joystickArr)):
             joystickArr[x] += 1.000
 
-        joystickArr[3] += controller.trim
+        if (any_greater_than_one(joystickArr)):
+            joystickArr[3] += controller.trim
         
         # Send data to the connected USB serial device
         data = '''J0:{0:.3f},J1:{1:.3f},J2:{2:.3f},J3:{3:.3f},J4:{4:.3f},J5:{5:.3f},M:{6},LD:{7},RD:{8},UD:{9},DD:{10},Sq:{11},Tr:{12},Ci:{13},Xx:{14},Sh:{15},Op:{16},Ps:{17},L3:{18},R3:{19},#'''.format(joystickArr[0], joystickArr[1], joystickArr[2], joystickArr[3], joystickArr[4], joystickArr[5],
@@ -873,8 +880,8 @@ class MyController(Controller):
 
     def on_left_arrow_press(self):
         self.dpadArr[0] = 1
-        if(self.mode == 0 and not trim <= -1):
-            trim -= 0.1
+        if(self.mode == 0 and self.trim > -1):
+            self.trim -= 0.1
 
     def on_left_right_arrow_release(self):
         self.dpadArr[0] = 0
@@ -882,8 +889,8 @@ class MyController(Controller):
 
     def on_right_arrow_press(self):
         self.dpadArr[1] = 1
-        if(self.mode == 0 and not trim <= 1):
-            trim += 0.1
+        if(self.mode == 0 and self.trim < 1):
+            self.trim += 0.1
 
     def on_L3_press(self):
         self.miscButtonArr[3] = 1
