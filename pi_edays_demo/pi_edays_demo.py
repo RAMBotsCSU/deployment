@@ -678,6 +678,7 @@ def lidar_thread_funct(controller):
             lidar.reset()
             lidar.clear_input()
             for scan in lidar.iter_scans():
+                print("WE MAADE ITT!!!")
                 for (_, angle, distance) in scan:
                     scan_data[min([359, int(angle)])] = distance 
                 #process_data(scan_data)
