@@ -671,7 +671,6 @@ def lidar_thread_funct(controller):
                 lidar = RPLidar(None, PORT_NAME, timeout=3)
                 print("Lidar connected", lidar.info)
                 lidar.reset()
-                lidar.clear_input()
                 break
             except:
                 print("Error connecting to lidar. Trying again")
@@ -700,10 +699,8 @@ def lidar_thread_funct(controller):
             time.sleep(1)
             lidar.reset()
             lidar.stop()
-            lidar.stop_motor()
             lidar.disconnect()
             print("Lidar stopped.")
-                        
 
         if controller.running_autonomous_walk:
 
