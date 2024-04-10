@@ -670,13 +670,14 @@ def lidar_thread_funct(controller):
             try:
                 lidar = RPLidar(None, PORT_NAME, timeout=3)
                 print("Lidar connected", lidar.info)
-                lidar.reset()
+                lidar.clear_input()
                 break
             except:
                 print("Error connecting to lidar. Trying again")
                 time.sleep(1)
         try:
             for scan in lidar.iter_scans():
+                print("here.")
                 for (_, angle, distance) in scan:
                     scan_data[min([359, int(angle)])] = distance 
                 #process_data(scan_data)
@@ -697,9 +698,11 @@ def lidar_thread_funct(controller):
         except Exception as e:
             print(e)
             time.sleep(1)
+            lidar.reset()
+            lidar.clear_input()
             lidar.stop()
             lidar.disconnect()
-            print("Lidar stopped.")
+            print("Lidar disconnected.")
 
         if controller.running_autonomous_walk:
 
