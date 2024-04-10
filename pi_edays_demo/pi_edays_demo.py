@@ -598,7 +598,7 @@ def lidar_thread_funct(controller):
             break
         except:
             print("Error connecting to lidar. Trying again")
-            # time.sleep(0.1)
+            time.sleep(1)
 
     # Define Parameters
     red_dot_threshold = 400 # 500=.5m (?); threshhold for detecting close object
@@ -664,7 +664,7 @@ def lidar_thread_funct(controller):
                     dist_sum += arr[angle_step + i]                  # sum all distances at one angle
             temp_avg[angle_step] = dist_sum / (len(dist_buffer)*5) # average distance by size of dist_buffer
         return temp_avg
-
+    
     for scan in lidar.iter_scans():
         for (_, angle, distance) in scan:
             scan_data[min([359, int(angle)])] = distance 
@@ -987,8 +987,8 @@ driver_thread = threading.Thread(target=driver_thread_funct, args=(controller,))
 driver_thread.daemon = True
 driver_thread.start()
 
-lidar_thread = threading.Thread(target=lidar_thread_funct, args=(controller,))
-lidar_thread.daemon = True
-lidar_thread.start()
+# lidar_thread = threading.Thread(target=lidar_thread_funct, args=(controller,))
+# lidar_thread.daemon = True
+# lidar_thread.start()
 
 controller.listen()
