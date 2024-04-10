@@ -676,8 +676,6 @@ def lidar_thread_funct(controller):
                 except:
                     print("Error connecting to lidar. Trying again")
                     time.sleep(1)
-            lidar.reset()
-            lidar.clear_input()
             for scan in lidar.iter_scans():
                 print("WE MAADE ITT!!!")
                 for (_, angle, distance) in scan:
@@ -703,6 +701,7 @@ def lidar_thread_funct(controller):
             lidar.stop()
             lidar.stop_motor()
             lidar.disconnect()
+            lidar.reset()
             print("Lidar stopped.")
                         
 
