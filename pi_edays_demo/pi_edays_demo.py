@@ -670,6 +670,7 @@ def lidar_thread_funct(controller):
             while True:
                 try:
                     lidar = RPLidar(None, PORT_NAME, timeout=3)
+                    print(lidar.baudrate)
                     print("Lidar connected", lidar.info)
                     break
                 except:
@@ -700,6 +701,7 @@ def lidar_thread_funct(controller):
             print(e)
             time.sleep(1)
             lidar.stop()
+            lidar.stop_motor()
             lidar.disconnect()
             print("Lidar stopped.")
                         
