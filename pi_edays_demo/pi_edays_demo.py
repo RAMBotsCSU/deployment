@@ -698,10 +698,10 @@ def lidar_thread_funct(controller):
         except Exception as e:
             print(e)
             time.sleep(1)
+            lidar.reset()
             lidar.stop()
             lidar.stop_motor()
             lidar.disconnect()
-            lidar.reset()
             print("Lidar stopped.")
                         
 
