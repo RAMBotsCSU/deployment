@@ -665,31 +665,34 @@ def lidar_thread_funct(controller):
             temp_avg[angle_step] = dist_sum / (len(dist_buffer)*5) # average distance by size of dist_buffer
         return temp_avg
     
-    try:
-        lidar.reset()
-        lidar.clear_input()
-        for scan in lidar.iter_scans():
-            for (_, angle, distance) in scan:
-                scan_data[min([359, int(angle)])] = distance 
-            #process_data(scan_data)
+    while(True):
+        try:
+            lidar.reset()
+            lidar.clear_input()
+            for scan in lidar.iter_scans():
+                for (_, angle, distance) in scan:
+                    scan_data[min([359, int(angle)])] = distance 
+                #process_data(scan_data)
 
-            if controller.running_stop_mode:
+                if controller.running_stop_mode:
 
-                if (time.time() - starttime) > 0.25: # every .25s
-                    starttime = time.time() # restart timer
-                    dist_buffer.append(scan_data) # add new data set to dist_buffer
-                    if len(dist_buffer) > window: # more data sets than window parameter
-                        dist_buffer.pop(0) # remove oldest data set
-                        avg_dist = update_avg_dist(dist_buffer) # get average of all data sets
-                        if min(avg_dist) <= red_dot_threshold: # any distance within stop proximity?
-                            STOP_FLAG = True
-                            print("Stop Proximity.")
-                        else:
-                            STOP_FLAG = False
-    except:
-        lidar.stop()
-        lidar.disconnect()
-        print("Lidar stopped.")
+                    if (time.time() - starttime) > 0.25: # every .25s
+                        starttime = time.time() # restart timer
+                        dist_buffer.append(scan_data) # add new data set to dist_buffer
+                        if len(dist_buffer) > window: # more data sets than window parameter
+                            dist_buffer.pop(0) # remove oldest data set
+                            avg_dist = update_avg_dist(dist_buffer) # get average of all data sets
+                            if min(avg_dist) <= red_dot_threshold: # any distance within stop proximity?
+                                STOP_FLAG = True
+                                print("Stop Proximity.")
+                            else:
+                                STOP_FLAG = False
+        except Exception as e:
+            print(e)
+            time.sleep(1)
+            lidar.stop()
+            lidar.disconnect()
+            print("Lidar stopped.")
                         
 
         if controller.running_autonomous_walk:
