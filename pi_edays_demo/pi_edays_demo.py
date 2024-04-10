@@ -665,7 +665,7 @@ def lidar_thread_funct(controller):
     for scan in lidar.iter_scans():
         for (_, angle, distance) in scan:
             scan_data[min([359, int(angle)])] = distance 
-        process_data(scan_data)
+        #process_data(scan_data)
 
         if controller.running_stop_mode:
 
@@ -984,8 +984,8 @@ driver_thread = threading.Thread(target=driver_thread_funct, args=(controller,))
 driver_thread.daemon = True
 driver_thread.start()
 
-# lidar_thread = threading.Thread(target=lidar_thread_funct, args=(controller,))
-# lidar_thread.daemon = True
-# lidar_thread.start()
+lidar_thread = threading.Thread(target=lidar_thread_funct, args=(controller,))
+lidar_thread.daemon = True
+lidar_thread.start()
 
 controller.listen()
