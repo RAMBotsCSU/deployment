@@ -666,17 +666,17 @@ def lidar_thread_funct(controller):
         return temp_avg
     
     while(True):
+        while True:
+            try:
+                lidar = RPLidar(None, PORT_NAME, timeout=3)
+                print("Lidar connected", lidar.info)
+                lidar.reset()
+                lidar.clear_input()
+                break
+            except:
+                print("Error connecting to lidar. Trying again")
+                time.sleep(1)
         try:
-            while True:
-                try:
-                    lidar = RPLidar(None, PORT_NAME, timeout=3)
-                    print("Lidar connected", lidar.info)
-                    lidar.reset()
-                    lidar.clear_input()
-                    break
-                except:
-                    print("Error connecting to lidar. Trying again")
-                    time.sleep(1)
             for scan in lidar.iter_scans():
                 for (_, angle, distance) in scan:
                     scan_data[min([359, int(angle)])] = distance 
