@@ -591,14 +591,14 @@ def lidar_thread_funct(controller):
 
     # Setup the RPLidar
     PORT_NAME = '/dev/ttyUSB0'
-    while True:
-        try:
-            lidar = RPLidar(None, PORT_NAME, timeout=3)
-            print("Lidar connected", lidar.info)
-            break
-        except:
-            print("Error connecting to lidar. Trying again")
-            time.sleep(1)
+    # while True:
+    #     try:
+    #         lidar = RPLidar(None, PORT_NAME, timeout=3)
+    #         print("Lidar connected", lidar.info)
+    #         break
+    #     except:
+    #         print("Error connecting to lidar. Trying again")
+    #         time.sleep(1)
 
     # Define Parameters
     red_dot_threshold = 400 # 500=.5m (?); threshhold for detecting close object
@@ -667,6 +667,14 @@ def lidar_thread_funct(controller):
     
     while(True):
         try:
+            while True:
+                try:
+                    lidar = RPLidar(None, PORT_NAME, timeout=3)
+                    print("Lidar connected", lidar.info)
+                    break
+                except:
+                    print("Error connecting to lidar. Trying again")
+                    time.sleep(1)
             lidar.reset()
             lidar.clear_input()
             for scan in lidar.iter_scans():
