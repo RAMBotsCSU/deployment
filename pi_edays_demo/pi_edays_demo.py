@@ -647,7 +647,7 @@ def lidar_thread_funct(controller):
             pygame.draw.line(lcd, pygame.Color(255, 255, 255), (tick_placement, (map_width/2)+2), (tick_placement, (map_width/2)-2), 1) # x-ticks
             pygame.draw.line(lcd, pygame.Color(255, 255, 255), ((map_width/2)+2, tick_placement), ((map_width/2)-2, tick_placement), 1) # y-ticks
             label = str(i/1000)
-            font = pygame.font.SysFont(None, 12)
+            font = pygame.font.Font(None, 12)
             text = font.render(label, True, (255, 255, 255))
             lcd.blit(text, (int(map_width/2 + 5), tick_placement - 5)) # x-axis
             lcd.blit(text, (tick_placement - 5, int(map_width/2 + 5))) # y-axis
@@ -682,7 +682,7 @@ def lidar_thread_funct(controller):
             for scan in lidar.iter_scans():
                 for (_, angle, distance) in scan:
                     scan_data[min([359, int(angle)])] = distance 
-                # update_lidar_map(scan_data)
+                update_lidar_map(scan_data)
 
                 if controller.running_stop_mode:
 
