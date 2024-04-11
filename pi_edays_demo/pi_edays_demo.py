@@ -18,7 +18,8 @@ import PySimpleGUI as sg
 import signal
 from math import cos, sin, pi
 import csv
-from adafruit_rplidar import RPLidar
+# from adafruit_rplidar import RPLidar
+from rplidar import RPLidar
 import queue
 from pycoral.utils import edgetpu
 import numpy as np
@@ -606,9 +607,16 @@ def lidar_thread_funct(controller):
 
         while True:
             try:
-                lidar = RPLidar(None, PORT_NAME, timeout=3, baudrate=256000)
-                print("Lidar connected", lidar.info)
-                lidar.clear_input()
+                # lidar = RPLidar(None, PORT_NAME, timeout=3, baudrate=256000)
+                # print("Lidar connected", lidar.info)
+                # lidar.clear_input()
+                lidar = RPLidar(PORT_NAME)
+
+                info = lidar.get_info()
+                print(info)
+
+                health = lidar.get_health()
+                print(health)
                 break
             except Exception as e:
                 print(e)
@@ -674,7 +682,7 @@ def lidar_thread_funct(controller):
             for scan in lidar.iter_scans():
                 for (_, angle, distance) in scan:
                     scan_data[min([359, int(angle)])] = distance 
-                #update_lidar_map(scan_data)
+                update_lidar_map(scan_data)
 
                 if controller.running_stop_mode:
 
