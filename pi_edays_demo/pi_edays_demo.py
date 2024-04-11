@@ -695,6 +695,31 @@ def lidar_thread_funct(controller):
                                 print("Stop Proximity.")
                             else:
                                 STOP_FLAG = False
+
+            if controller.running_autonomous_walk:
+
+                if time.time() - start_time > .2:
+                    start_time = time.time()
+                    #lidar_view = process_data(scan_data)
+
+                    runLidarInference(lidar_view, interpreter)
+
+                    joystickArr[0] = joystick_map_to_range(controller.l3_horizontal)+1
+                    joystickArr[1] = joystick_map_to_range(controller.l3_vertical)+1
+                    joystickArr[2] = trigger_map_to_range(controller.triggerL)+1
+                    joystickArr[3] = joystick_map_to_range(controller.r3_horizontal)+1
+                    joystickArr[4] = joystick_map_to_range(controller.r3_vertical)+1
+                    joystickArr[5] = trigger_map_to_range(controller.triggerR)+1
+
+                    lidar_data.append(lidar_view + joystickArr)
+
+            elif len(lidar_data) > 0:
+                with open(output_file, 'w', newline='') as csvfile:
+                    csv_writer = csv.writer(csvfile)
+                    csv_writer.writerows(lidar_data)
+                print(f'Lidar data saved to {output_file}')
+                lidar_data = []
+
         except Exception as e:
             print(e)
             time.sleep(1)
@@ -703,30 +728,6 @@ def lidar_thread_funct(controller):
             lidar.stop()
             lidar.disconnect()
             print("Lidar disconnected.")
-
-        if controller.running_autonomous_walk:
-
-            if time.time() - start_time > .2:
-                start_time = time.time()
-                #lidar_view = process_data(scan_data)
-
-                runLidarInference(lidar_view, interpreter)
-
-                joystickArr[0] = joystick_map_to_range(controller.l3_horizontal)+1
-                joystickArr[1] = joystick_map_to_range(controller.l3_vertical)+1
-                joystickArr[2] = trigger_map_to_range(controller.triggerL)+1
-                joystickArr[3] = joystick_map_to_range(controller.r3_horizontal)+1
-                joystickArr[4] = joystick_map_to_range(controller.r3_vertical)+1
-                joystickArr[5] = trigger_map_to_range(controller.triggerR)+1
-
-                lidar_data.append(lidar_view + joystickArr)
-
-        elif len(lidar_data) > 0:
-            with open(output_file, 'w', newline='') as csvfile:
-                csv_writer = csv.writer(csvfile)
-                csv_writer.writerows(lidar_data)
-            print(f'Lidar data saved to {output_file}')
-            lidar_data = []
 
 
 class MyController(Controller):
@@ -1005,8 +1006,8 @@ driver_thread = threading.Thread(target=driver_thread_funct, args=(controller,))
 driver_thread.daemon = True
 driver_thread.start()
 
-lidar_thread = threading.Thread(target=lidar_thread_funct, args=(controller,))
-lidar_thread.daemon = True
-lidar_thread.start()
+# lidar_thread = threading.Thread(target=lidar_thread_funct, args=(controller,))
+# lidar_thread.daemon = True
+# lidar_thread.start()
 
 controller.listen()
