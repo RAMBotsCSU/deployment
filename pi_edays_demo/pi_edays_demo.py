@@ -610,7 +610,8 @@ def lidar_thread_funct(controller):
                 print("Lidar connected", lidar.info)
                 lidar.clear_input()
                 break
-            except:
+            except Exception as e:
+                print(e)
                 print("Error connecting to lidar. Trying again")
                 time.sleep(1)
         return lidar
