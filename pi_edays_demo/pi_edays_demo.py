@@ -606,7 +606,7 @@ def lidar_thread_funct(controller):
 
         while True:
             try:
-                lidar = RPLidar(None, PORT_NAME, timeout=3)
+                lidar = RPLidar(None, PORT_NAME, timeout=3, baudrate=115200)
                 print("Lidar connected", lidar.info)
                 lidar.clear_input()
                 break
