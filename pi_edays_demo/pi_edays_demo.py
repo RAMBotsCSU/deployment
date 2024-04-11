@@ -682,7 +682,7 @@ def lidar_thread_funct(controller):
             for scan in lidar.iter_scans():
                 for (_, angle, distance) in scan:
                     scan_data[min([359, int(angle)])] = distance 
-                update_lidar_map(scan_data)
+                # update_lidar_map(scan_data)
 
                 if controller.running_stop_mode:
 
@@ -725,7 +725,6 @@ def lidar_thread_funct(controller):
             print(e)
             time.sleep(1)
             lidar.stop()
-            lidar.stop_motor()
             lidar.disconnect()
             print("Lidar disconnected.")
 
