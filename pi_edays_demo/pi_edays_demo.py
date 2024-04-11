@@ -569,16 +569,17 @@ def driver_thread_funct(controller):
        # time.sleep(0.01)
         #update_gui_table_controller(controller)
 
+
 def lidar_thread_funct(controller):
     global lidar_view
     global STOP_FLAG
     # Set up pygame and the display
     os.putenv('SDL_FBDEV', '/dev/fb1')
     pygame.init()
-    # map_width = 400 # printed map size
-    # lcd = pygame.display.set_mode((map_width, map_width))
-    # lcd.fill((0,0,0))
-    # pygame.display.update()
+    map_width = 400 # printed map size
+    lcd = pygame.display.set_mode((map_width, map_width))
+    lcd.fill((0,0,0))
+    pygame.display.update()
 
 
     #Create variables
@@ -589,17 +590,6 @@ def lidar_thread_funct(controller):
     # CSV file name
     output_file = 'lidar_data.csv'
 
-    # Setup the RPLidar
-    PORT_NAME = '/dev/ttyUSB0'
-    # while True:
-    #     try:
-    #         lidar = RPLidar(None, PORT_NAME, timeout=3)
-    #         print("Lidar connected", lidar.info)
-    #         break
-    #     except:
-    #         print("Error connecting to lidar. Trying again")
-    #         time.sleep(1)
-
     # Define Parameters
     red_dot_threshold = 400 # 500=.5m (?); threshhold for detecting close object
     white_dot_threshold = 4000 # furthest distance factored into calculations
@@ -608,39 +598,51 @@ def lidar_thread_funct(controller):
            " m\nStop proximity: ", red_dot_threshold/1000, " m")
 
     # Scale parameters to map
-    # scale_data = int(white_dot_threshold/map_width)
+    scale_data = int(white_dot_threshold/map_width)
+
+    def setup_lidar_connection():
+        # Setup the RPLidar
+        PORT_NAME = '/dev/ttyUSB0'
+
+        while True:
+            try:
+                lidar = RPLidar(None, PORT_NAME, timeout=3)
+                print("Lidar connected", lidar.info)
+                lidar.clear_input()
+                break
+            except:
+                print("Error connecting to lidar. Trying again")
+                time.sleep(1)
+        return lidar
   
-    # def process_data(data):
-    #     lcd.fill((0,0,0))
-    #     # Initialize a list to store Lidar data
-    #     processed_data = []
-    #     for angle in range(360):
-    #         distance = float(data[angle])
-    #         if distance > 0:                  # ignore initially ungathered data points
-    #             radians = angle * pi / 180.0
-    #             x = distance * cos(radians)
-    #             y = distance * sin(radians)
-    #             point = (int(int(x)/scale_data + map_width/2), int(int(y)/scale_data + map_width/2))
-    #             if distance <= red_dot_threshold:
-    #                 lcd.set_at(point, pygame.Color(255, 0, 0))
-    #             elif distance <= white_dot_threshold:
-    #                 lcd.set_at(point, pygame.Color(255, 255, 255))
-    #         processed_data.append(distance)
-    #     pygame.draw.line(lcd, pygame.Color(255,255,255), (0, map_width/2), (map_width, map_width/2), 1)
-    #     pygame.draw.line(lcd, pygame.Color(255,255,255), (map_width/2, 0), (map_width/2, map_width), 1)
-    #     for i in range(-white_dot_threshold + int(white_dot_threshold%500), white_dot_threshold, 500): # tick every .5 meters
-    #         if i == 0 or i == -white_dot_threshold:
-    #             continue
-    #         tick_placement = int(i/(scale_data*2))+int(map_width/2)
-    #         pygame.draw.line(lcd, pygame.Color(255, 255, 255), (tick_placement, (map_width/2)+2), (tick_placement, (map_width/2)-2), 1) # x-ticks
-    #         pygame.draw.line(lcd, pygame.Color(255, 255, 255), ((map_width/2)+2, tick_placement), ((map_width/2)-2, tick_placement), 1) # y-ticks
-    #         label = str(i/1000)
-    #         font = pygame.font.SysFont("arial", 12)
-    #         text = font.render(label, True, (255, 255, 255))
-    #         lcd.blit(text, (int(map_width/2 + 5), tick_placement - 5)) # x-axis
-    #         lcd.blit(text, (tick_placement - 5, int(map_width/2 + 5))) # y-axis
-    #     pygame.display.update()
-    #     return processed_data
+    def update_lidar_map(data):
+        lcd.fill((0,0,0))
+        # Initialize a list to store Lidar data
+        for angle in range(360):
+            distance = float(data[angle])
+            if distance > 0:                  # ignore initially ungathered data points
+                radians = angle * pi / 180.0
+                x = distance * cos(radians)
+                y = distance * sin(radians)
+                point = (int(int(x)/scale_data + map_width/2), int(int(y)/scale_data + map_width/2))
+                if distance <= red_dot_threshold:
+                    lcd.set_at(point, pygame.Color(255, 0, 0))
+                elif distance <= white_dot_threshold:
+                    lcd.set_at(point, pygame.Color(255, 255, 255))
+        pygame.draw.line(lcd, pygame.Color(255,255,255), (0, map_width/2), (map_width, map_width/2), 1)
+        pygame.draw.line(lcd, pygame.Color(255,255,255), (map_width/2, 0), (map_width/2, map_width), 1)
+        for i in range(-white_dot_threshold + int(white_dot_threshold%500), white_dot_threshold, 500): # tick every .5 meters
+            if i == 0 or i == -white_dot_threshold:
+                continue
+            tick_placement = int(i/(scale_data*2))+int(map_width/2)
+            pygame.draw.line(lcd, pygame.Color(255, 255, 255), (tick_placement, (map_width/2)+2), (tick_placement, (map_width/2)-2), 1) # x-ticks
+            pygame.draw.line(lcd, pygame.Color(255, 255, 255), ((map_width/2)+2, tick_placement), ((map_width/2)-2, tick_placement), 1) # y-ticks
+            label = str(i/1000)
+            font = pygame.font.SysFont(None, 12)
+            text = font.render(label, True, (255, 255, 255))
+            lcd.blit(text, (int(map_width/2 + 5), tick_placement - 5)) # x-axis
+            lcd.blit(text, (tick_placement - 5, int(map_width/2 + 5))) # y-axis
+        pygame.display.update()
     
     scan_data = [white_dot_threshold] * 360
     lidar_data = []
@@ -666,21 +668,12 @@ def lidar_thread_funct(controller):
         return temp_avg
     
     while(True):
-        while True:
-            try:
-                lidar = RPLidar(None, PORT_NAME, timeout=3)
-                print("Lidar connected", lidar.info)
-                lidar.clear_input()
-                break
-            except:
-                print("Error connecting to lidar. Trying again")
-                time.sleep(1)
+        lidar = setup_lidar_connection()
         try:
             for scan in lidar.iter_scans():
-                print("here.")
                 for (_, angle, distance) in scan:
                     scan_data[min([359, int(angle)])] = distance 
-                #process_data(scan_data)
+                #update_lidar_map(scan_data)
 
                 if controller.running_stop_mode:
 
@@ -700,9 +693,8 @@ def lidar_thread_funct(controller):
 
                 if time.time() - start_time > .2:
                     start_time = time.time()
-                    #lidar_view = process_data(scan_data)
-
-                    runLidarInference(lidar_view, interpreter)
+                    lidar_view = scan_data
+                    runLidarInference(scan_data, interpreter)
 
                     joystickArr[0] = joystick_map_to_range(controller.l3_horizontal)+1
                     joystickArr[1] = joystick_map_to_range(controller.l3_vertical)+1
@@ -711,7 +703,7 @@ def lidar_thread_funct(controller):
                     joystickArr[4] = joystick_map_to_range(controller.r3_vertical)+1
                     joystickArr[5] = trigger_map_to_range(controller.triggerR)+1
 
-                    lidar_data.append(lidar_view + joystickArr)
+                    lidar_data.append(scan_data + joystickArr)
 
             elif len(lidar_data) > 0:
                 with open(output_file, 'w', newline='') as csvfile:
@@ -1006,8 +998,8 @@ driver_thread = threading.Thread(target=driver_thread_funct, args=(controller,))
 driver_thread.daemon = True
 driver_thread.start()
 
-# lidar_thread = threading.Thread(target=lidar_thread_funct, args=(controller,))
-# lidar_thread.daemon = True
-# lidar_thread.start()
+lidar_thread = threading.Thread(target=lidar_thread_funct, args=(controller,))
+lidar_thread.daemon = True
+lidar_thread.start()
 
 controller.listen()
