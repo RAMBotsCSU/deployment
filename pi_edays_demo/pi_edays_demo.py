@@ -689,6 +689,7 @@ def lidar_thread_funct(controller):
                 break
             except: 
                 print("Error connecting to lidar. Trying again")
+                time.sleep(1)
 
     lidar = setup_lidar_connection()
     while(True):
@@ -735,7 +736,8 @@ def lidar_thread_funct(controller):
                 print(f'Lidar data saved to {output_file}')
                 lidar_data = []
         except Exception as e:
-            print(e)
+            print("Exception occured: ", e)
+            time.sleep(3)
             lidar = setup_lidar_connection()
         # finally:
         #     lidar.stop()
