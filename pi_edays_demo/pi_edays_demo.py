@@ -11,7 +11,6 @@ import subprocess
 import os
 import pygame
 from pygame import mixer
-from pygame import font
 import random
 from serial.serialutil import SerialException
 import PySimpleGUI as sg
@@ -646,11 +645,11 @@ def lidar_thread_funct(controller):
             tick_placement = int(i/(scale_data*2))+int(map_width/2)
             pygame.draw.line(lcd, pygame.Color(255, 255, 255), (tick_placement, (map_width/2)+2), (tick_placement, (map_width/2)-2), 1) # x-ticks
             pygame.draw.line(lcd, pygame.Color(255, 255, 255), ((map_width/2)+2, tick_placement), ((map_width/2)-2, tick_placement), 1) # y-ticks
-            label = str(i/1000)
-            font = pygame.font.SysFont("Helvetica", 12)
-            text = font.render(label, True, (255, 255, 255))
-            lcd.blit(text, (int(map_width/2 + 5), tick_placement - 5)) # x-axis
-            lcd.blit(text, (tick_placement - 5, int(map_width/2 + 5))) # y-axis
+            # label = str(i/1000)
+            # font = pygame.font.SysFont("Helvetica", 12)
+            # text = font.render(label, True, (255, 255, 255))
+            # lcd.blit(text, (int(map_width/2 + 5), tick_placement - 5)) # x-axis
+            # lcd.blit(text, (tick_placement - 5, int(map_width/2 + 5))) # y-axis
         pygame.display.update()
     
     scan_data = [white_dot_threshold] * 360
