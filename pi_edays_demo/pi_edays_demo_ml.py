@@ -84,8 +84,9 @@ layout = [tab1_layout]
 window = sg.Window('RamBOTs', layout, size=(800, 420))
 
 STOP_FLAG = False
-TURN_FACTOR = 0.0
-turn_factor_lock = threading.Lock()
+RIGHT_FLAG = False
+LEFT_FLAG = False
+CENTER_FLAG = False
 
 AUDIO_ENABLED = False
 audio_dict = {"startMLSound": None, 
@@ -454,7 +455,9 @@ def any_greater_than_one(arr):
 
 def driver_thread_funct(controller):
     global STOP_FLAG
-    global TURN_FACTOR
+    global CENTER_FLAG
+    global RIGHT_FLAG
+    global LEFT_FLAG
     playSound(random.choice(["startup1"]*19 + ["startup2"]*1)) # dont mind this line
     runningMode = 0
     joystickArr = [0.000, 0.000, 0.000, 0.000, 0.000, 0.000]
@@ -491,8 +494,12 @@ def driver_thread_funct(controller):
                 cv2.imshow("Tennis Ball Found!", frame)
             # with global_float_lock:
             #     value = global_float
-            print("TURN FACTOR is", TURN_FACTOR)
-            joystickArr[3] += TURN_FACTOR
+            if CENTER_FLAG:
+                joystickArr[3] = 0
+            elif RIGHT_FLAG:
+                joystickArr[3] = 0.1
+            elif LEFT_FLAG:
+                joystickArr[3] = -0.1
 
         if controller.running_stop_mode and STOP_FLAG:
             print("Signal Stop.")
@@ -574,6 +581,9 @@ def driver_thread_funct(controller):
 
 def ball_thread_funct(controller):
     # global TURN_FACTOR
+    global CENTER_FLAG
+    global RIGHT_FLAG
+    global LEFT_FLAG
     #Create Variables
     model_path = '../../machine_learning/tennisBall/BallTrackingModelQuant_edgetpu.tflite'
     CAMERA_WIDTH = 640
@@ -648,13 +658,19 @@ def ball_thread_funct(controller):
         increment = frame_width / 3
         if ((2*increment) <= X <= frame_width):
             print("Turning Right")
-            TURN_FACTOR = 0.1
+            RIGHT_FLAG = True
+            LEFT_FLAG = False
+            CENTER_FLAG = False
         elif (0 <= X < increment):
             print("Turning Left")
-            TURN_FACTOR = -0.1
+            LEFT_FLAG = True
+            RIGHT_FLAG = False
+            CENTER_FLAG = False
         elif (increment <= X < (2*increment)):
             print("Centered!")
-            TURN_FACTOR = 0.0
+            CENTER_FLAG = True
+            LEFT_FLAG = False
+            RIGHT_FLAG = False
 
     # Set up Camera
     cap = cv2.VideoCapture(0)
