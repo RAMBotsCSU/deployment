@@ -1022,14 +1022,14 @@ driver_thread = threading.Thread(target=driver_thread_funct, args=(controller,))
 driver_thread.daemon = True
 driver_thread.start()
 
-lidar_thread = threading.Thread(target=lidar_thread_funct, args=(controller,))
-lidar_thread.daemon = True
-lidar_thread.start()
+# lidar_thread = threading.Thread(target=lidar_thread_funct, args=(controller,))
+# lidar_thread.daemon = True
+# lidar_thread.start()
 
-controller.listen()
+# controller.listen()
 
-# dthread = threading.Thread(target=controller.listen)
-# dthread.daemon = True
-# dthread.start()
+dthread = threading.Thread(target=controller.listen)
+dthread.daemon = True
+dthread.start()
 
-# lidar_thread_funct(controller)
+lidar_thread_funct(controller)
