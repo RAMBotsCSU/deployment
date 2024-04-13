@@ -1138,4 +1138,4 @@ controller_thread = threading.Thread(target=controller.listen())
 controller_thread.daemon = True
 controller_thread.start()
 
-ball_thread_funct()
+ball_thread_funct(controller)
