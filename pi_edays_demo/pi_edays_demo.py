@@ -575,22 +575,17 @@ def setup_lidar_connection():
 
     while True:
         try:
-            lidar = RPLidar(None, PORT_NAME, timeout=1)
-            print("Lidar connected", lidar.info)
-            # lidar.clear_input()
+            # lidar = RPLidar(None, PORT_NAME, timeout=1)
+            # print("Lidar connected", lidar.info)
+            # # lidar.clear_input()
 
-            # lidar = RPLidar(PORT_NAME)
+            lidar = RPLidar(PORT_NAME)
 
-            # info = lidar.get_info()
-            # print(info)
+            info = lidar.get_info()
+            print(info)
 
             # health = lidar.get_health()
             # print(health)
-            lidar.stop()
-            lidar.disconnect()
-            print("Lidar stopped.")
-            lidar = RPLidar(None, PORT_NAME, timeout=1)
-            print("Lidar connected", lidar.info)
             break
         except Exception as e:
             print(e)
@@ -687,6 +682,7 @@ def lidar_thread_funct(controller):
     # lidar = setup_lidar_connection()
     try:
         for scan in lidar.iter_scans():
+        # for i, scan in enumerate(lidar.iter_scans()):
             for (_, angle, distance) in scan:
                 scan_data[min([359, int(angle)])] = distance 
             update_lidar_map(scan_data)
