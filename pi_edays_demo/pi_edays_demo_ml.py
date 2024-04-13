@@ -640,10 +640,13 @@ def ball_thread_funct(controller):
     def calculate_direction(X, frame_width=CAMERA_WIDTH):
         increment = frame_width / 3
         if ((2*increment) <= X <= frame_width):
+            print("Turning Left")
             TURN_FACTOR = 0.01
         elif (0 <= X < increment):
+            print("Turning Right")
             TURN_FACTOR = -0.01
         elif (increment <= X < (2*increment)):
+            print("Centered!")
             TURN_FACTOR = 0.0
 
     # Set up Camera
