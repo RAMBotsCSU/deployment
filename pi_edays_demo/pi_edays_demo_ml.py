@@ -976,6 +976,7 @@ class MyController(Controller):
             print("Stopped Autonomous Walk")
         if (self.mode == 4 and not self.running_ML):
             self.running_ML = True
+            print("Value of running_ML should be True, ", self.running_ML)
         elif self.mode == 4 and self.running_ML:
             self.running_ML = False
         elif(self.mode == 5):
