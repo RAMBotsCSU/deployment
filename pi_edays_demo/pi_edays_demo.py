@@ -686,10 +686,11 @@ def lidar_thread_funct(controller):
             try:
                 lidar = RPLidar(None, PORT_NAME, timeout=3)
                 print("Lidar connected.")
-                break
+                return lidar
             except: 
                 print("Error connecting to lidar. Trying again")
                 time.sleep(1)
+            
 
     lidar = setup_lidar_connection()
     while(True):
