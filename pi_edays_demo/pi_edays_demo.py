@@ -1,8 +1,3 @@
-#TODO:
-#implement teensy_serial_main_demo [MAKE SURE TO SUBTRACT 1 FROM MOVEMENT ARR VALUES]
-#add trigger lock and roll
-#add bountds to mode 0=walk, 1=pushups, 2=left side right side control, 3=machine learning????, 4=gyro demo
-
 from pyPS4Controller.controller import Controller
 import serial
 import threading
@@ -26,7 +21,7 @@ from sklearn.preprocessing import MinMaxScaler
 import time
 import sys
 
-shared_queue = queue.Queue() # for sharing data accross two threads
+shared_queue = queue.Queue() # for sharing data across two threads
 lidar_view = []
 
 sg.theme('DarkGreen2')
@@ -104,20 +99,6 @@ if (AUDIO_ENABLED):
     startMLSound = pygame.mixer.Sound(audioFolder + 'Other/starting_ML.mp3')
     stopMLSound = pygame.mixer.Sound(audioFolder + 'Other/stopping_ML.mp3')
 
-    # sheep1 = pygame.mixer.Sound(audioFolder + 'Sheeps/sheep1.mp3')
-    # sheep2 = pygame.mixer.Sound(audioFolder + 'Sheeps/sheep2.mp3')
-    # sheep3 = pygame.mixer.Sound(audioFolder + 'Sheeps/sheep3.mp3')
-    # sheep4 = pygame.mixer.Sound(audioFolder + 'Sheeps/sheep4.mp3')
-    # sheep5 = pygame.mixer.Sound(audioFolder + 'Sheeps/sheep_sounds.mp3')
-
-    # hi1 = pygame.mixer.Sound(audioFolder + 'Hello/hi1.mp3')
-    # hi2 = pygame.mixer.Sound(audioFolder + 'Hello/hi2.mp3')
-    # hi3 = pygame.mixer.Sound(audioFolder + 'Hello/hi3.mp3')
-
-    # mergedHi1 = pygame.mixer.Sound(audioFolder + 'MergedHellos/MergedHi1.mp3')
-    # mergedHi2 = pygame.mixer.Sound(audioFolder + 'MergedHellos/MergedHi2.mp3')
-    # mergedHi3 = pygame.mixer.Sound(audioFolder + 'MergedHellos/MergedHi3.mp3')
-
     walkMode = pygame.mixer.Sound(audioFolder + 'Mode_Switch/walking.mp3')
     pushUpsMode = pygame.mixer.Sound(audioFolder + 'Mode_Switch/push_ups.mp3')
     legControlMode = pygame.mixer.Sound(audioFolder + 'Mode_Switch/leg_control.mp3')
@@ -139,20 +120,6 @@ if (AUDIO_ENABLED):
     error.set_volume(0.25)
     startMLSound.set_volume(0.4)
     stopMLSound.set_volume(0.4)
-
-    # sheep1.set_volume(0.8)
-    # sheep2.set_volume(0.8)
-    # sheep3.set_volume(0.8)
-    # sheep4.set_volume(0.8)
-    # sheep5.set_volume(0.5)
-
-    # hi1.set_volume(0.5)
-    # hi2.set_volume(0.5)
-    # hi3.set_volume(0.5)
-
-    # mergedHi1.set_volume(0.9)
-    # mergedHi2.set_volume(0.9)
-    # mergedHi3.set_volume(0.9)
 
     walkMode.set_volume(0.5)
     pushUpsMode.set_volume(0.5)
@@ -184,14 +151,6 @@ if (AUDIO_ENABLED):
                     "pause": pause,
                     "error": error
                     }
-
-
-    #sound libraries
-    # sheep_sounds = [sheep1,sheep2,sheep3,sheep4,sheep5]
-    # hi_sounds = [hi1,hi2,hi3]
-    # merged_sounds = [mergedHi1, mergedHi2, mergedHi3]
-    # mode_sounds = [walkMode,walkAlternate,pushUpsMode,pushUpsAlternate,legControlMode,legControlAlternate,gyroMode,gyroAlternate,machineLearningMode,machineLearningAlternate]
-    # songs = [song1,song2,song3,song4]
 
 
 def kill_program():
@@ -327,15 +286,13 @@ def playModeSounds(mode):
         playSongs(-1)
 
 
-def stopSounds():
-    for sound in mode_sounds:
-        sound.stop()
-    for sound in songs:
-        sound.stop()
+#def stopSounds():
+#    for sound in mode_sounds:
+#        sound.stop()
+#    for sound in songs:
+#        sound.stop()
 
 def playSongs(song):
-    # for sound in songs:
-    #     sound.stop()
     if(song == -1):
         playSound(random.choice(["song1", "song2", "song3", "song4"]))
     elif(song == 1):
@@ -382,9 +339,9 @@ def trigger_map_to_range(value):
         return 0
 
 #Function to map a range of [-65534,65198] to [-1,1] with 0 in the middle
-def joey_trigger_map_to_range(value):
-    newValue = (value+168)/65366
-    return newValue
+#def joey_trigger_map_to_range(value):
+#    newValue = (value+168)/65366
+#    return newValue
 
 def value_checker(odrive_values, correct_values):
     #checks the values against the correct values
@@ -465,7 +422,7 @@ def driver_thread_funct(controller):
     runningMode = 0
     joystickArr = [0.000, 0.000, 0.000, 0.000, 0.000, 0.000]
     rgb(0)
-    gui_update_counter = 0
+    #gui_update_counter = 0
     inferred_values = [0.000, 0.000, 0.000, 0.000, 0.000, 0.000] # gets updated by machine learning inference
     
     curr_odrive = ""
@@ -475,7 +432,7 @@ def driver_thread_funct(controller):
                      "odrive4": {"axis0":{}, "axis1": {}},
                      "odrive5": {"axis0":{}, "axis1": {}},
                      "odrive6": {"axis0":{}, "axis1": {}}}
-    hasCheckedOdrives = False
+    #hasCheckedOdrives = False
 
     #running section
     while True:
@@ -565,9 +522,6 @@ def driver_thread_funct(controller):
                             odrive_params[curr_odrive][axis][key] = value
 
 
-
-       # time.sleep(0.01)
-        #update_gui_table_controller(controller)
 
 # def setup_lidar_connection():
 #     # Setup the RPLidar
@@ -932,16 +886,12 @@ class MyController(Controller):
             
 
     def on_L3_press(self):
-        self.miscButtonArr[3] = 1
-        #playSound(random.choice(merged_sounds))
-        #playSound(random.choice(hi_sounds))
-        #playSound(random.choice(sheep_sounds))        
+        self.miscButtonArr[3] = 1        
     
     def on_L3_release(self):
         self.miscButtonArr[3] = 0
 
     def on_R3_press(self):
-        # stopSounds()
         self.miscButtonArr[4] = 1
 
     def on_R3_release(self):
@@ -949,7 +899,6 @@ class MyController(Controller):
 
     def on_options_press(self):
         self.miscButtonArr[1] = 1
-        # playSound(random.choice(merged_sounds))
         
     def on_options_release(self):
         self.miscButtonArr[1] = 0
@@ -996,14 +945,13 @@ class MyController(Controller):
 print("hello world")
 
 try:
-    ser = serial.Serial('/dev/ttyACM0',9600)
+    ser = serial.Serial('/dev/ttyACM0', 9600)
 except SerialException as e:
-    print(f"An error occured: {e}. \nPlease unplug the USB to the Teensy, press stop, and plug it in again.")
+    print(f"An error occurred: {e}. \nPlease unplug the USB to the Teensy, press stop, and plug it in again.")
     #play sound here
     playSound("error")
 
-    while(1):
-        pass
+    kill_program()
 
 
 controller = MyController(interface="/dev/input/js0", connecting_using_ds4drv=False)
