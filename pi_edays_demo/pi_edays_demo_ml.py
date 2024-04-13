@@ -567,7 +567,7 @@ def driver_thread_funct(controller):
 def ball_thread_funct(controller):
     global TURN_FACTOR
     #Create Variables
-    model_path = '../../machine_learning/tennisBall/BallTrackingModelQuant_edgetpu.tflite'
+    model_path = '../..machine_learning/tennisBall/BallTrackingModelQuant_edgetpu.tflite'
     CAMERA_WIDTH = 640
     CAMERA_HEIGHT = 480
     INPUT_WIDTH_AND_HEIGHT = 224
@@ -652,6 +652,8 @@ def ball_thread_funct(controller):
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, CAMERA_HEIGHT)
     cap.set(cv2.CAP_PROP_FPS, 30)
 
+    print("Set up Camera")
+
     # Set up Interpreter
     interpreter = edgetpu.make_interpreter(model_path, device = 'usb')
     interpreter.allocate_tensors()
@@ -666,6 +668,7 @@ def ball_thread_funct(controller):
     input_index = input_details[0]['index']
     start_time = 0
     
+    print("Set up Interpreter!")
 
     while True and controller.running_ML:
         ret, frame = cap.read()
