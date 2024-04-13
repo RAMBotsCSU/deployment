@@ -723,9 +723,9 @@ def lidar_thread_funct(controller):
             except Exception as e:
                 print(e)
                 lidar.reset()
-                lidar.clear_input()
                 lidar.stop()
                 lidar.disconnect()
+                lidar.clear_input()
     except KeyboardInterrupt:
         time.sleep(1)
         lidar.stop()
