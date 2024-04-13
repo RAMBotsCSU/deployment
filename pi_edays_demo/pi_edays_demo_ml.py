@@ -567,7 +567,7 @@ def driver_thread_funct(controller):
 def ball_thread_funct(controller):
     global TURN_FACTOR
     #Create Variables
-    model_path = '../..machine_learning/tennisBall/BallTrackingModelQuant_edgetpu.tflite'
+    model_path = '../../machine_learning/tennisBall/BallTrackingModelQuant_edgetpu.tflite'
     CAMERA_WIDTH = 640
     CAMERA_HEIGHT = 480
     INPUT_WIDTH_AND_HEIGHT = 224
