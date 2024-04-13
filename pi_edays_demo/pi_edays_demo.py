@@ -725,7 +725,7 @@ def lidar_thread_funct(controller):
                 lidar.reset()
                 lidar.stop()
                 lidar.disconnect()
-                lidar.clear_input()
+                # lidar.clear_input()
     except KeyboardInterrupt:
         time.sleep(1)
         lidar.stop()
