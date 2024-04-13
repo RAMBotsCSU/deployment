@@ -671,7 +671,12 @@ def ball_thread_funct(controller):
     print("Set up Interpreter!")
 
     while True and controller.running_ML:
+        print("got into the for loop")
+
         ret, frame = cap.read()
+
+        if ret:
+            print("camera has read")
         
         if not ret:
             print('Capture failed')
