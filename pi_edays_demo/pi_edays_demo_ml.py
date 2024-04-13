@@ -595,7 +595,6 @@ def ball_thread_funct(controller):
             areaPos = area(pos)
             if score > 0.99 and  (350 <= areaPos < 50176) and process_image.prevAreaPos > 400:
                 result.append({'pos': positions[idx]})
-                print("Appended Something")
             process_image.prevAreaPos = areaPos  # Update prevAreaPos for the next iteration
 
         return result
@@ -640,10 +639,10 @@ def ball_thread_funct(controller):
     def calculate_direction(X, frame_width=CAMERA_WIDTH):
         increment = frame_width / 3
         if ((2*increment) <= X <= frame_width):
-            print("Turning Left")
+            print("Turning Right")
             TURN_FACTOR = 0.01
         elif (0 <= X < increment):
-            print("Turning Right")
+            print("Turning Left")
             TURN_FACTOR = -0.01
         elif (increment <= X < (2*increment)):
             print("Centered!")
