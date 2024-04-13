@@ -572,10 +572,10 @@ def lidar_thread_funct(controller):
     output_file = 'lidar_data.csv'
 
     # Define Parameters
-    red_dot_threshold = 400 # 500=.5m (?); threshhold for detecting close object
-    white_dot_threshold = 4000 # furthest distance factored into calculations
+    red_dot_threshold = 750 # 500=.5m (?); threshhold for detecting close object
+    white_dot_threshold = 2400 # furthest distance factored into calculations
 
-    print("Lidar setup initialized.\nInitial Collection Range = ", white_dot_threshold/1000,
+    print("Lidar setup initialized.\nPrinted Map Range: ", white_dot_threshold/1000, " m"
            " m\nStop proximity: ", red_dot_threshold/1000, " m")
 
     # Scale parameters to map
@@ -588,13 +588,16 @@ def lidar_thread_funct(controller):
             distance = float(data[angle])
             if distance > 0:                  # ignore initially ungathered data points
                 radians = angle * pi / 180.0
-                x = distance * cos(radians)
-                y = distance * sin(radians)
+                y = distance * cos(radians)
+                x = -distance * sin(radians)
                 point = (int(int(x)/scale_data + map_width/2), int(int(y)/scale_data + map_width/2))
                 if distance <= red_dot_threshold:
                     lcd.set_at(point, pygame.Color(255, 0, 0))
                 elif distance <= white_dot_threshold:
                     lcd.set_at(point, pygame.Color(255, 255, 255))
+                # else:
+                #     point = ((-int(white_dot_threshold * sin(radians)), int(white_dot_threshold * cos(radians))))
+                #     lcd.set_at(point, pygame.Color(255, 255, 255))
         pygame.draw.line(lcd, pygame.Color(255,255,255), (0, map_width/2), (map_width, map_width/2), 1)
         pygame.draw.line(lcd, pygame.Color(255,255,255), (map_width/2, 0), (map_width/2, map_width), 1)
         for i in range(-white_dot_threshold + int(white_dot_threshold%500), white_dot_threshold, 500): # tick every .5 meters
@@ -656,7 +659,7 @@ def lidar_thread_funct(controller):
 
                 if controller.running_stop_mode:
 
-                    if (time.time() - starttime) > 0.25: # every .25s
+                    if (time.time() - starttime) > 0.1: # every .1s
                         starttime = time.time() # restart timer
                         dist_buffer.append(scan_data) # add new data set to dist_buffer
                         if len(dist_buffer) > window: # more data sets than window parameter
