@@ -1025,8 +1025,8 @@ driver_thread.start()
 # lidar_thread.daemon = True
 # lidar_thread.start()
 
-dthread = threading.Thread(target=controller.listen())
+dthread = threading.Thread(target=controller.listen)
 dthread.daemon = True
 dthread.start()
 
-lidar_thread_funct()
+lidar_thread_funct(controller)
