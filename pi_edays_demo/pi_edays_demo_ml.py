@@ -494,6 +494,7 @@ def driver_thread_funct(controller):
                 cv2.imshow("Tennis Ball Found!", frame)
             # with global_float_lock:
             #     value = global_float
+            print(CENTER_FLAG, RIGHT_FLAG, LEFT_FLAG)
             if CENTER_FLAG:
                 joystickArr[3] = 0
             elif RIGHT_FLAG:
