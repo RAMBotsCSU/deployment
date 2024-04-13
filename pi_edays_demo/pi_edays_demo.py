@@ -586,6 +586,11 @@ def setup_lidar_connection():
 
             # health = lidar.get_health()
             # print(health)
+            lidar.stop()
+            lidar.disconnect()
+            print("Lidar stopped.")
+            lidar = RPLidar(None, PORT_NAME, timeout=1)
+            print("Lidar connected", lidar.info)
             break
         except Exception as e:
             print(e)
