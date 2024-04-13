@@ -484,8 +484,6 @@ def driver_thread_funct(controller):
                        joystick_map_to_range(controller.triggerR)]         # 5 = does nothing, triggerR/R2
         # Note : the joystickArr[4]/pitch is not used in walk mode
 
-        print("Turn factor value", TURN_FACTOR)
-        print("Running ML?", controller.running_ML)
         if controller.running_ML and abs(TURN_FACTOR) > 0.0:
             if not shared_queue.empty():
                 frame = shared_queue.get()
