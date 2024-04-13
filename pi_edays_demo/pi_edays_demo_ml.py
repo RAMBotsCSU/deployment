@@ -652,6 +652,8 @@ def ball_thread_funct(controller):
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, CAMERA_HEIGHT)
     cap.set(cv2.CAP_PROP_FPS, 30)
 
+    print("Set up Camera")
+
     # Set up Interpreter
     interpreter = edgetpu.make_interpreter(model_path, device = 'usb')
     interpreter.allocate_tensors()
@@ -666,6 +668,7 @@ def ball_thread_funct(controller):
     input_index = input_details[0]['index']
     start_time = 0
     
+    print("Set up Interpreter!")
 
     while True and controller.running_ML:
         ret, frame = cap.read()
@@ -973,6 +976,7 @@ class MyController(Controller):
             print("Stopped Autonomous Walk")
         if (self.mode == 4 and not self.running_ML):
             self.running_ML = True
+            print("Value of running_ML should be True, ", self.running_ML)
         elif self.mode == 4 and self.running_ML:
             self.running_ML = False
         elif(self.mode == 5):
