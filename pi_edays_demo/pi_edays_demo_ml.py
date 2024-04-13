@@ -85,6 +85,7 @@ window = sg.Window('RamBOTs', layout, size=(800, 420))
 
 STOP_FLAG = False
 TURN_FACTOR = 0.0
+turn_factor_lock = threading.Lock()
 
 AUDIO_ENABLED = False
 audio_dict = {"startMLSound": None, 
@@ -488,6 +489,8 @@ def driver_thread_funct(controller):
             if not shared_queue.empty():
                 frame = shared_queue.get()
                 cv2.imshow("Tennis Ball Found!", frame)
+            # with global_float_lock:
+            #     value = global_float
             print("TURN FACTOR is", TURN_FACTOR)
             joystickArr[3] += TURN_FACTOR
 
@@ -570,7 +573,7 @@ def driver_thread_funct(controller):
         #update_gui_table_controller(controller)
 
 def ball_thread_funct(controller):
-    global TURN_FACTOR
+    # global TURN_FACTOR
     #Create Variables
     model_path = '../../machine_learning/tennisBall/BallTrackingModelQuant_edgetpu.tflite'
     CAMERA_WIDTH = 640
