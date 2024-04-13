@@ -658,17 +658,14 @@ def ball_thread_funct(controller):
     def calculate_direction(X, frame_width=CAMERA_WIDTH):
         increment = frame_width / 3
         if ((2*increment) <= X <= frame_width):
-            print("Turning Right")
             RIGHT_FLAG = True
             LEFT_FLAG = False
             CENTER_FLAG = False
         elif (0 <= X < increment):
-            print("Turning Left")
             LEFT_FLAG = True
             RIGHT_FLAG = False
             CENTER_FLAG = False
         elif (increment <= X < (2*increment)):
-            print("Centered!")
             CENTER_FLAG = True
             LEFT_FLAG = False
             RIGHT_FLAG = False
