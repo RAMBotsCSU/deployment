@@ -597,6 +597,7 @@ global lidar
 lidar = setup_lidar_connection()
 
 def lidar_thread_funct(controller):
+    global lidar
     global lidar_view
     global STOP_FLAG
     # Set up pygame and the display
@@ -678,7 +679,7 @@ def lidar_thread_funct(controller):
             temp_avg[angle_step] = dist_sum / (len(dist_buffer)*5) # average distance by size of dist_buffer
         return temp_avg
     
-    lidar = setup_lidar_connection()
+    # lidar = setup_lidar_connection()
     try:
         for scan in lidar.iter_scans():
             for (_, angle, distance) in scan:
