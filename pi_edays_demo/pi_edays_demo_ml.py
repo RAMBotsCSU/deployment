@@ -643,10 +643,10 @@ def ball_thread_funct(controller):
         increment = frame_width / 3
         if ((2*increment) <= X <= frame_width):
             print("Turning Right")
-            TURN_FACTOR = 0.01
+            TURN_FACTOR = 0.1
         elif (0 <= X < increment):
             print("Turning Left")
-            TURN_FACTOR = -0.01
+            TURN_FACTOR = -0.1
         elif (increment <= X < (2*increment)):
             print("Centered!")
             TURN_FACTOR = 0.0
