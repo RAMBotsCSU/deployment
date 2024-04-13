@@ -17,8 +17,8 @@ import PySimpleGUI as sg
 import signal
 from math import cos, sin, pi
 import csv
-from adafruit_rplidar import RPLidar
-# from rplidar import RPLidar
+# from adafruit_rplidar import RPLidar
+from rplidar import RPLidar
 import queue
 from pycoral.utils import edgetpu
 import numpy as np
