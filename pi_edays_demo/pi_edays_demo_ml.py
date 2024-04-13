@@ -595,7 +595,7 @@ def ball_thread_funct(controller):
             areaPos = area(pos)
             if score > 0.99 and  (350 <= areaPos < 50176) and process_image.prevAreaPos > 400:
                 result.append({'pos': positions[idx]})
-                print(areaPos)
+                print("Appended Something")
             process_image.prevAreaPos = areaPos  # Update prevAreaPos for the next iteration
 
         return result
@@ -671,12 +671,8 @@ def ball_thread_funct(controller):
     print("Set up Interpreter!")
 
     while True:
-        print("got into the for loop")
 
         ret, frame = cap.read()
-
-        if ret:
-            print("camera has read")
         
         if not ret:
             print('Capture failed')
