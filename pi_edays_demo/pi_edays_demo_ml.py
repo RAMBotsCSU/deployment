@@ -484,6 +484,9 @@ def driver_thread_funct(controller):
         # Note : the joystickArr[4]/pitch is not used in walk mode
 
         if controller.running_ML and TURN_FACTOR != 0.0:
+            if not shared_queue.empty():
+                frame = shared_queue.get()
+                cv2.imshow("Tennis Ball Found!", frame)
             joystickArr[3] += TURN_FACTOR
 
         if controller.running_stop_mode and STOP_FLAG:
@@ -628,7 +631,7 @@ def ball_thread_funct(controller):
             center = bboxCenterPoint(x1, y1, x2, y2)
             calculate_direction(center[0])
 
-        cv2.imshow('Object Detection', frame)
+        shared_queue.put(frame)
 
     def bboxCenterPoint(x1, y1, x2, y2):
         bbox_center_x = int((x1 + x2) / 2)
@@ -1126,16 +1129,12 @@ driver_thread = threading.Thread(target=driver_thread_funct, args=(controller,))
 driver_thread.daemon = True
 driver_thread.start()
 
-#ball_thread = threading.Thread(target=ball_thread_funct, args=(controller,))
-#ball_thread.daemon = True
-#ball_thread.start()
+ball_thread = threading.Thread(target=ball_thread_funct, args=(controller,))
+ball_thread.daemon = True
+ball_thread.start()
 
 #lidar_thread = threading.Thread(target=lidar_thread_funct, args=(controller,))
 #lidar_thread.daemon = True
 #lidar_thread.start()
 
-controller_thread = threading.Thread(target=controller.listen())
-controller_thread.daemon = True
-controller_thread.start()
-
-ball_thread_funct(controller)
+controller.listen()
