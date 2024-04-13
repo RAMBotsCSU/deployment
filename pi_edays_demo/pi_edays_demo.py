@@ -606,8 +606,8 @@ def lidar_thread_funct(controller):
 
         while True:
             try:
-                lidar = RPLidar(None, PORT_NAME, timeout=3, baudrate=256000)
-                print("Lidar connected", lidar.info)
+                lidar = RPLidar(None, PORT_NAME, timeout=1)
+                print("Lidar connected")
                 # lidar.clear_input()
                 # lidar = RPLidar(PORT_NAME)
 
@@ -720,8 +720,7 @@ def lidar_thread_funct(controller):
             print(f'Lidar data saved to {output_file}')
             lidar_data = []
 
-    except Exception as e:
-        print(e)
+    except KeyboardInterrupt:
         time.sleep(1)
         lidar.stop()
         lidar.disconnect()
