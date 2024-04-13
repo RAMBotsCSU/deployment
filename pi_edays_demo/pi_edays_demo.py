@@ -722,7 +722,7 @@ def lidar_thread_funct(controller):
                     lidar_data = []
             except Exception as e:
                 print(e)
-                lidar.reset()
+                # lidar.reset()
                 lidar.stop()
                 lidar.disconnect()
                 # lidar.clear_input()
