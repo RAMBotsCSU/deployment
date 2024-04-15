@@ -658,7 +658,7 @@ def ball_thread_funct(controller):
         return [bbox_center_x, bbox_center_y]
 
     def calculate_direction(X, frame_width=CAMERA_WIDTH):
-        if (time.time() - ballTime) > 0.1:
+        if (time.time() - ballTime) >= 2:
             ballTime = time.time()
             increment = frame_width / 3
             if ((2*increment) <= X <= frame_width):
@@ -694,7 +694,6 @@ def ball_thread_funct(controller):
     width = input_shape[2]
 
     input_index = input_details[0]['index']
-    start_time = 0
     
     print("Set up Interpreter!")
 
@@ -711,11 +710,8 @@ def ball_thread_funct(controller):
 
         top_result = process_image(interpreter, image, input_index)
 
-        end = time.time()
         display_result(top_result, frame)
         
-        start_time = end
-
     cap.release()
     cv2.destroyAllWindows()
 
