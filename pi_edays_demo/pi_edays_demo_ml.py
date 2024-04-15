@@ -491,7 +491,7 @@ def driver_thread_funct(controller):
                 #move = ball_queue.get()
             move = 1.000
             print("Move Value:", move)
-            joystickArr = [0.000, 0.000, 0.000, move, 0.000, 0.000]
+            joystickArr = [1.000, 0.000, 0.000, 0.000, 0.000, 0.000]
             print("Joytick Array [3] value:", joystickArr)
 
         if controller.running_stop_mode and STOP_FLAG:
@@ -522,7 +522,7 @@ def driver_thread_funct(controller):
         controller.miscButtonArr[3], controller.miscButtonArr[4])
 
         response = serial_read_write(data, ser)
-        print("Output:", response)
+        # print("Output:", response)
 
         if (runningMode == 6):
             line = getLineSerial(ser)
