@@ -654,7 +654,7 @@ def ball_thread_funct(controller):
             time.sleep(5)
         elif (increment <= X < (2*increment)):
             ball_queue.put(0)
-            time.sleep(5)s
+            time.sleep(5)
 
     # Set up Camera
     cap = cv2.VideoCapture(0)
