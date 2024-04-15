@@ -38,6 +38,8 @@ from pycoral.adapters import classify
 import tflite_runtime.interpreter as tflite
 from PIL import Image
 
+ball_queue = queue.Queue()
+
 shared_queue = queue.Queue() # for sharing data accross two threads
 lidar_view = []
 
@@ -84,9 +86,6 @@ layout = [tab1_layout]
 window = sg.Window('RamBOTs', layout, size=(800, 420))
 
 STOP_FLAG = False
-RIGHT_FLAG = False
-LEFT_FLAG = False
-CENTER_FLAG = False
 
 AUDIO_ENABLED = False
 audio_dict = {"startMLSound": None, 
@@ -455,9 +454,6 @@ def any_greater_than_one(arr):
 
 def driver_thread_funct(controller):
     global STOP_FLAG
-    global CENTER_FLAG
-    global RIGHT_FLAG
-    global LEFT_FLAG
     playSound(random.choice(["startup1"]*19 + ["startup2"]*1)) # dont mind this line
     runningMode = 0
     joystickArr = [0.000, 0.000, 0.000, 0.000, 0.000, 0.000]
@@ -491,13 +487,11 @@ def driver_thread_funct(controller):
         if controller.running_ML:
             # with global_float_lock:
             #     value = global_float
-            print("Should be RIGHT and Flag should be true!", RIGHT_FLAG)
-            if CENTER_FLAG:
-                joystickArr[3] = 0
-            elif RIGHT_FLAG:
-                joystickArr[3] = 0.1
-            elif LEFT_FLAG:
-                joystickArr[3] = -0.1
+            if not ball_queue.empty():
+                move = ball_queue.get()
+            print("Before", move, joystickArr[3])
+            joystickArr[3] += move
+            print("After", joystickArr[3])
 
         if controller.running_stop_mode and STOP_FLAG:
             print("Signal Stop.")
@@ -579,9 +573,6 @@ def driver_thread_funct(controller):
 
 def ball_thread_funct(controller):
     # global TURN_FACTOR
-    global CENTER_FLAG
-    global RIGHT_FLAG
-    global LEFT_FLAG
     #Create Variables
     model_path = '../../machine_learning/tennisBall/BallTrackingModelQuant_edgetpu.tflite'
     CAMERA_WIDTH = 320
@@ -656,20 +647,12 @@ def ball_thread_funct(controller):
     def calculate_direction(X, frame_width=CAMERA_WIDTH):
         increment = frame_width / 3
         if ((2*increment) <= X <= frame_width):
-            RIGHT_FLAG = True
-            LEFT_FLAG = False
-            CENTER_FLAG = False
-            print("Right!", RIGHT_FLAG)
+            ball_queue.put(0.2)
         elif (0 <= X < increment):
-            LEFT_FLAG = True
-            RIGHT_FLAG = False
-            CENTER_FLAG = False
+            ball_queue.put(-0.2)
             print("Left!", LEFT_FLAG)
         elif (increment <= X < (2*increment)):
-            CENTER_FLAG = True
-            LEFT_FLAG = False
-            RIGHT_FLAG = False
-            print("Center!", CENTER_FLAG)
+            ball_queue.put(0)
 
     # Set up Camera
     cap = cv2.VideoCapture(0)
