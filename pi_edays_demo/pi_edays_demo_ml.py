@@ -489,12 +489,8 @@ def driver_thread_funct(controller):
         # Note : the joystickArr[4]/pitch is not used in walk mode
 
         if controller.running_ML:
-            if not shared_queue.empty():
-                frame = shared_queue.get()
-                cv2.imshow("Tennis Ball Found!", frame)
             # with global_float_lock:
             #     value = global_float
-            print(CENTER_FLAG, RIGHT_FLAG, LEFT_FLAG)
             if CENTER_FLAG:
                 joystickArr[3] = 0
             elif RIGHT_FLAG:
@@ -590,7 +586,6 @@ def ball_thread_funct(controller):
     CAMERA_WIDTH = 320
     CAMERA_HEIGHT = 240
     INPUT_WIDTH_AND_HEIGHT = 224
-    ballTime = time.time()
 
     # Functions
     def process_image(interpreter, image, input_index):
@@ -658,21 +653,22 @@ def ball_thread_funct(controller):
         return [bbox_center_x, bbox_center_y]
 
     def calculate_direction(X, frame_width=CAMERA_WIDTH):
-        if (time.time() - ballTime) >= 2:
-            ballTime = time.time()
-            increment = frame_width / 3
-            if ((2*increment) <= X <= frame_width):
-                RIGHT_FLAG = True
-                LEFT_FLAG = False
-                CENTER_FLAG = False
-            elif (0 <= X < increment):
-                LEFT_FLAG = True
-                RIGHT_FLAG = False
-                CENTER_FLAG = False
-            elif (increment <= X < (2*increment)):
-                CENTER_FLAG = True
-                LEFT_FLAG = False
-                RIGHT_FLAG = False
+        increment = frame_width / 3
+        if ((2*increment) <= X <= frame_width):
+            RIGHT_FLAG = True
+            LEFT_FLAG = False
+            CENTER_FLAG = False
+            print("Right!")
+        elif (0 <= X < increment):
+            LEFT_FLAG = True
+            RIGHT_FLAG = False
+            CENTER_FLAG = False
+            print("Left!")
+        elif (increment <= X < (2*increment)):
+            CENTER_FLAG = True
+            LEFT_FLAG = False
+            RIGHT_FLAG = False
+            print("Center!")
 
     # Set up Camera
     cap = cv2.VideoCapture(0)
