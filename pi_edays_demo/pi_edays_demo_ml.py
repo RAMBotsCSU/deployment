@@ -585,10 +585,11 @@ def ball_thread_funct(controller):
     global CENTER_FLAG
     global RIGHT_FLAG
     global LEFT_FLAG
+    startTime = time.time()
     #Create Variables
     model_path = '../../machine_learning/tennisBall/BallTrackingModelQuant_edgetpu.tflite'
-    CAMERA_WIDTH = 640
-    CAMERA_HEIGHT = 480
+    CAMERA_WIDTH = 320
+    CAMERA_HEIGHT = 240
     INPUT_WIDTH_AND_HEIGHT = 224
 
     # Functions
@@ -646,8 +647,9 @@ def ball_thread_funct(controller):
 
             center = bboxCenterPoint(x1, y1, x2, y2)
             calculate_direction(center[0])
-
-        shared_queue.put(frame)
+        
+        cv2.imshow('Tracking!', frame)`
+        #shared_queue.put(frame)
 
     def bboxCenterPoint(x1, y1, x2, y2):
         bbox_center_x = int((x1 + x2) / 2)
@@ -656,19 +658,21 @@ def ball_thread_funct(controller):
         return [bbox_center_x, bbox_center_y]
 
     def calculate_direction(X, frame_width=CAMERA_WIDTH):
-        increment = frame_width / 3
-        if ((2*increment) <= X <= frame_width):
-            RIGHT_FLAG = True
-            LEFT_FLAG = False
-            CENTER_FLAG = False
-        elif (0 <= X < increment):
-            LEFT_FLAG = True
-            RIGHT_FLAG = False
-            CENTER_FLAG = False
-        elif (increment <= X < (2*increment)):
-            CENTER_FLAG = True
-            LEFT_FLAG = False
-            RIGHT_FLAG = False
+        if (time.time() - startTime) > 0.1:
+            startTime = time.time()
+            increment = frame_width / 3
+            if ((2*increment) <= X <= frame_width):
+                RIGHT_FLAG = True
+                LEFT_FLAG = False
+                CENTER_FLAG = False
+            elif (0 <= X < increment):
+                LEFT_FLAG = True
+                RIGHT_FLAG = False
+                CENTER_FLAG = False
+            elif (increment <= X < (2*increment)):
+                CENTER_FLAG = True
+                LEFT_FLAG = False
+                RIGHT_FLAG = False
 
     # Set up Camera
     cap = cv2.VideoCapture(0)
