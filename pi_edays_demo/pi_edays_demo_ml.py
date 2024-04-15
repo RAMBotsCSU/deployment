@@ -590,7 +590,7 @@ def ball_thread_funct(controller):
     CAMERA_WIDTH = 320
     CAMERA_HEIGHT = 240
     INPUT_WIDTH_AND_HEIGHT = 224
-    startTime = time.time()
+    ballTime = time.time()
 
     # Functions
     def process_image(interpreter, image, input_index):
@@ -658,8 +658,8 @@ def ball_thread_funct(controller):
         return [bbox_center_x, bbox_center_y]
 
     def calculate_direction(X, frame_width=CAMERA_WIDTH):
-        if (time.time() - startTime) > 0.1:
-            startTime = time.time()
+        if (time.time() - ballTime) > 0.1:
+            ballTime = time.time()
             increment = frame_width / 3
             if ((2*increment) <= X <= frame_width):
                 RIGHT_FLAG = True
