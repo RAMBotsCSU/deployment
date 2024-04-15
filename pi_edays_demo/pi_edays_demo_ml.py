@@ -491,6 +491,7 @@ def driver_thread_funct(controller):
         if controller.running_ML:
             # with global_float_lock:
             #     value = global_float
+            print("Should be RIGHT and Flag should be true!", RIGHT_FLAG)
             if CENTER_FLAG:
                 joystickArr[3] = 0
             elif RIGHT_FLAG:
