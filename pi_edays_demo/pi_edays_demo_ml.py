@@ -522,7 +522,7 @@ def driver_thread_funct(controller):
         controller.miscButtonArr[3], controller.miscButtonArr[4])
 
         response = serial_read_write(data, ser)
-        # print("Output:", response)
+        print("Output:", response)
 
         if (runningMode == 6):
             line = getLineSerial(ser)
