@@ -489,9 +489,9 @@ def driver_thread_funct(controller):
             #     value = global_float
             #if not ball_queue.empty():
                 #move = ball_queue.get()
-            move = 1
+            move = 1.000
             print("Move Value:", move)
-            joystickArr = [0, 0, 0, move, 0, 0]
+            joystickArr = [0.000, 0.000, 0.000, move, 0.000, 0.000]
             print("Joytick Array [3] value:", joystickArr)
 
         if controller.running_stop_mode and STOP_FLAG:
