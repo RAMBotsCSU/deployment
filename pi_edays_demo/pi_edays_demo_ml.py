@@ -648,7 +648,7 @@ def ball_thread_funct(controller):
             center = bboxCenterPoint(x1, y1, x2, y2)
             calculate_direction(center[0])
         
-        cv2.imshow('Tracking!', frame)`
+        cv2.imshow('Tracking!', frame)
         #shared_queue.put(frame)
 
     def bboxCenterPoint(x1, y1, x2, y2):
