@@ -658,17 +658,17 @@ def ball_thread_funct(controller):
             RIGHT_FLAG = True
             LEFT_FLAG = False
             CENTER_FLAG = False
-            print("Right!")
+            print("Right!", RIGHT_FLAG)
         elif (0 <= X < increment):
             LEFT_FLAG = True
             RIGHT_FLAG = False
             CENTER_FLAG = False
-            print("Left!")
+            print("Left!", LEFT_FLAG)
         elif (increment <= X < (2*increment)):
             CENTER_FLAG = True
             LEFT_FLAG = False
             RIGHT_FLAG = False
-            print("Center!")
+            print("Center!", CENTER_FLAG)
 
     # Set up Camera
     cap = cv2.VideoCapture(0)
