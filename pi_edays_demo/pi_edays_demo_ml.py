@@ -489,9 +489,7 @@ def driver_thread_funct(controller):
             #     value = global_float
             if not ball_queue.empty():
                 move = ball_queue.get()
-            print("Before", move, joystickArr[3])
             joystickArr[3] = move
-            print("After", joystickArr[3])
 
         if controller.running_stop_mode and STOP_FLAG:
             print("Signal Stop.")
