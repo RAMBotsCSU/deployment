@@ -585,12 +585,12 @@ def ball_thread_funct(controller):
     global CENTER_FLAG
     global RIGHT_FLAG
     global LEFT_FLAG
-    startTime = time.time()
     #Create Variables
     model_path = '../../machine_learning/tennisBall/BallTrackingModelQuant_edgetpu.tflite'
     CAMERA_WIDTH = 320
     CAMERA_HEIGHT = 240
     INPUT_WIDTH_AND_HEIGHT = 224
+    startTime = time.time()
 
     # Functions
     def process_image(interpreter, image, input_index):
