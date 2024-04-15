@@ -487,9 +487,9 @@ def driver_thread_funct(controller):
         if controller.running_ML:
             # with global_float_lock:
             #     value = global_float
-            if not ball_queue.empty():
+            #if not ball_queue.empty():
                 #move = ball_queue.get()
-                move = 1
+            move = 1
             print("Move Value:", move)
             joystickArr = [0, 0, 0, move, 0, 0]
             print("Joytick Array [3] value:", joystickArr)
