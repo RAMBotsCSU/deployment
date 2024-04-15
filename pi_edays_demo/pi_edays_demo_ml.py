@@ -490,7 +490,7 @@ def driver_thread_funct(controller):
             if not ball_queue.empty():
                 move = ball_queue.get()
             print("Before", move, joystickArr[3])
-            joystickArr[3] += move
+            joystickArr[3] = move
             print("After", joystickArr[3])
 
         if controller.running_stop_mode and STOP_FLAG:
@@ -647,9 +647,9 @@ def ball_thread_funct(controller):
     def calculate_direction(X, frame_width=CAMERA_WIDTH):
         increment = frame_width / 3
         if ((2*increment) <= X <= frame_width):
-            ball_queue.put(0.2)
+            ball_queue.put(1.2)
         elif (0 <= X < increment):
-            ball_queue.put(-0.2)
+            ball_queue.put(0.8)
         elif (increment <= X < (2*increment)):
             ball_queue.put(0)
 
