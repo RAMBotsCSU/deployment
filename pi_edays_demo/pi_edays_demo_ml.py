@@ -650,7 +650,6 @@ def ball_thread_funct(controller):
             ball_queue.put(0.2)
         elif (0 <= X < increment):
             ball_queue.put(-0.2)
-            print("Left!", LEFT_FLAG)
         elif (increment <= X < (2*increment)):
             ball_queue.put(0)
 
