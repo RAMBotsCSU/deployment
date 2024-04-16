@@ -487,9 +487,8 @@ def driver_thread_funct(controller):
         if controller.running_ML:
             # with global_float_lock:
             #     value = global_float
-            #if not ball_queue.empty():
-                #move = ball_queue.get()
-            move = 1.000
+            if not ball_queue.empty():
+                move = ball_queue.get()
             print("Move Value:", move)
             joystickArr = [1.000, 0.000, 0.000, 0.000, 0.000, 0.000]
             print("Joytick Array [3] value:", joystickArr)
@@ -522,12 +521,12 @@ def driver_thread_funct(controller):
         controller.miscButtonArr[3], controller.miscButtonArr[4])
 
         response = serial_read_write(data, ser)
-        print("Output:", response)
+        # print("Output:", response)
 
         if (runningMode == 6):
             line = getLineSerial(ser)
             print(line)
-            if ("odrive" in line):
+            if ("odrive" in line):8j
                 # Header print statement indicating which odrive is being dumped
                 curr_odrive = line
 
