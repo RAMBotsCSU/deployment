@@ -1126,9 +1126,9 @@ driver_thread = threading.Thread(target=driver_thread_funct, args=(controller,))
 driver_thread.daemon = True
 driver_thread.start()
 
-#ball_thread = threading.Thread(target=ball_thread_funct, args=(controller,))
-#ball_thread.daemon = True
-#ball_thread.start()
+ball_thread = threading.Thread(target=ball_thread_funct, args=(controller,))
+ball_thread.daemon = True
+ball_thread.start()
 
 #lidar_thread = threading.Thread(target=lidar_thread_funct, args=(controller,))
 #lidar_thread.daemon = True
