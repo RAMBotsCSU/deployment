@@ -526,7 +526,7 @@ def driver_thread_funct(controller):
         if (runningMode == 6):
             line = getLineSerial(ser)
             print(line)
-            if ("odrive" in line):8j
+            if ("odrive" in line):8
                 # Header print statement indicating which odrive is being dumped
                 curr_odrive = line
 
