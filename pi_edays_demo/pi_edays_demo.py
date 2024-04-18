@@ -674,7 +674,7 @@ def ball_thread_funct(controller):
     
     print("Set up Interpreter!")
 
-    while True:
+    while controller.running_ML:
 
         ret, frame = cap.read()
         
