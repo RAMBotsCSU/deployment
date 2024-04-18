@@ -784,57 +784,56 @@ def lidar_thread_funct(controller):
             
 
     lidar = setup_lidar_connection()
-    while(True):
-        try:
-            for scan in lidar.iter_scans():
-                for (_, angle, distance) in scan:
-                    scan_data[min([359, int(angle)])] = distance 
-                update_lidar_map(scan_data)
+    try:
+        for scan in lidar.iter_scans():
+            for (_, angle, distance) in scan:
+                scan_data[min([359, int(angle)])] = distance 
+            update_lidar_map(scan_data)
 
-                if controller.running_stop_mode:
+            if controller.running_stop_mode:
+                if (time.time() - starttime) > 0.1: # every .1s
+                    starttime = time.time() # restart timer
+                    dist_buffer.append(scan_data) # add new data set to dist_buffer
+                    if len(dist_buffer) > window: # more data sets than window parameter
+                        dist_buffer.pop(0) # remove oldest data set
+                        avg_dist = update_avg_dist(dist_buffer) # get average of all data sets
+                        if min(avg_dist) <= red_dot_threshold: # any distance within stop proximity?
+                            STOP_FLAG = True
+                            print("STOP_FLAG raised.")
+                        else:
+                            STOP_FLAG = False
+                            print("STOP_FLAG reset. Okay to walk.")
 
-                    if (time.time() - starttime) > 0.1: # every .1s
-                        starttime = time.time() # restart timer
-                        dist_buffer.append(scan_data) # add new data set to dist_buffer
-                        if len(dist_buffer) > window: # more data sets than window parameter
-                            dist_buffer.pop(0) # remove oldest data set
-                            avg_dist = update_avg_dist(dist_buffer) # get average of all data sets
-                            if min(avg_dist) <= red_dot_threshold: # any distance within stop proximity?
-                                STOP_FLAG = True
-                                print("Stop Proximity.")
-                            else:
-                                STOP_FLAG = False
+        if controller.running_autonomous_walk:
 
-            if controller.running_autonomous_walk:
+            if time.time() - start_time > .2:
+                start_time = time.time()
+                lidar_view = scan_data
+                runLidarInference(scan_data, interpreter)
 
-                if time.time() - start_time > .2:
-                    start_time = time.time()
-                    lidar_view = scan_data
-                    runLidarInference(scan_data, interpreter)
+                joystickArr[0] = joystick_map_to_range(controller.l3_horizontal)+1
+                joystickArr[1] = joystick_map_to_range(controller.l3_vertical)+1
+                joystickArr[2] = trigger_map_to_range(controller.triggerL)+1
+                joystickArr[3] = joystick_map_to_range(controller.r3_horizontal)+1
+                joystickArr[4] = joystick_map_to_range(controller.r3_vertical)+1
+                joystickArr[5] = trigger_map_to_range(controller.triggerR)+1
 
-                    joystickArr[0] = joystick_map_to_range(controller.l3_horizontal)+1
-                    joystickArr[1] = joystick_map_to_range(controller.l3_vertical)+1
-                    joystickArr[2] = trigger_map_to_range(controller.triggerL)+1
-                    joystickArr[3] = joystick_map_to_range(controller.r3_horizontal)+1
-                    joystickArr[4] = joystick_map_to_range(controller.r3_vertical)+1
-                    joystickArr[5] = trigger_map_to_range(controller.triggerR)+1
+                lidar_data.append(scan_data + joystickArr)
 
-                    lidar_data.append(scan_data + joystickArr)
-
-            elif len(lidar_data) > 0:
-                with open(output_file, 'w', newline='') as csvfile:
-                    csv_writer = csv.writer(csvfile)
-                    csv_writer.writerows(lidar_data)
-                print(f'Lidar data saved to {output_file}')
-                lidar_data = []
-        except Exception as e:
-            print("Exception occured: ", e)
-            time.sleep(3)
-            lidar = setup_lidar_connection()
-        # finally:
-        #     lidar.stop()
-        #     lidar.disconnect()
-        #     print("Lidar stopped.")
+        elif len(lidar_data) > 0:
+            with open(output_file, 'w', newline='') as csvfile:
+                csv_writer = csv.writer(csvfile)
+                csv_writer.writerows(lidar_data)
+            print(f'Lidar data saved to {output_file}')
+            lidar_data = []
+    except KeyboardInterrupt:
+        print("Program Ended")
+    except Exception as e:
+        print("Exception occured: ", e)
+    finally:
+        lidar.stop()
+        lidar.disconnect()
+        print("Lidar stopped.")
 
 
 class MyController(Controller):
