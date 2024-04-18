@@ -81,7 +81,7 @@ window = sg.Window('RamBOTs', layout, size=(800, 420))
 
 STOP_FLAG = False
 
-AUDIO_ENABLED = False
+AUDIO_ENABLED = True
 audio_dict = {"startMLSound": None, 
               "stopMLSound": None,
               "walkMode": None,
@@ -213,23 +213,15 @@ def gui_table_handler(controller): # update the GUI table with controller inputs
 
 
 
-
-processML = None
-
 def startML():
     playSound("startMLSound")
-    global processML
     print("starting machine learning!")
-    processML = subprocess.Popen(['python3', 'machine_learning/Object_Detection.py','--geometry', '800x600+100+100'])
+
 
 
 def killML():
     playSound("stopMLSound")
-    global processML
-    if processML:
-        print("killing machine learning.")
-        processML.terminate()
-        processML.wait()
+    print("killing machine learning.")
 
 
 def postprocess_prediction(output_values):
