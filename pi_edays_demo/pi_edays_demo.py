@@ -834,7 +834,9 @@ def lidar_thread_funct(controller):
         lidar.stop()
         lidar.disconnect()
         print("Lidar stopped.")
-    while(True)
+    while(True):
+        continue
+    
 
 
 class MyController(Controller):
