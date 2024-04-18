@@ -632,8 +632,8 @@ def ball_thread_funct(controller):
             center = bboxCenterPoint(x1, y1, x2, y2)
             calculate_direction(center[0])
         
-        #if controller.running_ML:
-        cv2.imshow('Tracking!', frame)
+        if controller.running_ML:
+            cv2.imshow('Tracking!', frame)
 
     def bboxCenterPoint(x1, y1, x2, y2):
         bbox_center_x = int((x1 + x2) / 2)
@@ -673,7 +673,7 @@ def ball_thread_funct(controller):
     
     print("Set up Interpreter!")
 
-    while controller.running_ML:
+    while True:
 
         ret, frame = cap.read()
         
