@@ -485,8 +485,6 @@ def driver_thread_funct(controller):
         # Note : the joystickArr[4]/pitch is not used in walk mode
 
         if controller.running_ML:
-            # with global_float_lock:
-            #     value = global_float
             move = 0.000
             if not ball_queue.empty():
                 move = ball_queue.get()
@@ -634,8 +632,8 @@ def ball_thread_funct(controller):
             center = bboxCenterPoint(x1, y1, x2, y2)
             calculate_direction(center[0])
         
+        #if controller.running_ML:
         cv2.imshow('Tracking!', frame)
-        #shared_queue.put(frame)
 
     def bboxCenterPoint(x1, y1, x2, y2):
         bbox_center_x = int((x1 + x2) / 2)
@@ -675,7 +673,7 @@ def ball_thread_funct(controller):
     
     print("Set up Interpreter!")
 
-    while True:
+    while controller.running_ML:
 
         ret, frame = cap.read()
         

@@ -20,19 +20,6 @@ import numpy as np
 from sklearn.preprocessing import MinMaxScaler
 import time
 import sys
-#FOR ML MODE
-import re
-import cv2
-import numpy as np
-import math
-from pycoral.utils import edgetpu
-from pycoral.utils import dataset
-from pycoral.adapters import common
-from pycoral.adapters import classify
-import tflite_runtime.interpreter as tflite
-from PIL import Image
-
-ball_queue = queue.Queue()
 
 shared_queue = queue.Queue() # for sharing data across two threads
 lidar_view = []
@@ -461,12 +448,6 @@ def driver_thread_funct(controller):
                        joystick_map_to_range(controller.triggerR)]         # 5 = does nothing, triggerR/R2
         # Note : the joystickArr[4]/pitch is not used in walk mode
 
-        if controller.running_ML:
-            move = 0.000
-            if not ball_queue.empty():
-                move = ball_queue.get()
-            joystickArr = [0.000, 0.000, 0.000, move, 0.000, 0.000]
-
         if controller.running_stop_mode and STOP_FLAG:
             print("Signal Stop.")
             joystickArr = [0.000, 0.000, 0.000, 0.000, 0.000, 0.000]
@@ -568,129 +549,6 @@ def driver_thread_funct(controller):
 
 # global lidar
 # lidar = setup_lidar_connection()
-
-def ball_thread_funct(controller):
-    # global TURN_FACTOR
-    #Create Variables
-    model_path = '../../machine_learning/tennisBall/BallTrackingModelQuant_edgetpu.tflite'
-    CAMERA_WIDTH = 320
-    CAMERA_HEIGHT = 240
-    INPUT_WIDTH_AND_HEIGHT = 224
-
-    # Functions
-    def process_image(interpreter, image, input_index):
-        input_data = (np.array(image)).astype(np.uint8)
-        input_data = input_data.reshape((1, 224, 224, 3))
-
-        # Process
-        interpreter.set_tensor(input_index, input_data)
-        interpreter.invoke()
-
-        # Get outputs
-        output_details = interpreter.get_output_details()
-    
-        process_image.prevAreaPos = getattr(process_image, "prevAreaPos", 0)
-
-        positions = (interpreter.get_tensor(output_details[0]['index']))
-        conf = (interpreter.get_tensor(output_details[1]['index'])/255)
-        result = []
-
-        for idx, score in enumerate(conf):
-            pos = positions[0]
-            areaPos = area(pos)
-            if score > 0.99 and  (350 <= areaPos < 50176) and process_image.prevAreaPos > 400:
-                result.append({'pos': positions[idx]})
-            process_image.prevAreaPos = areaPos  # Update prevAreaPos for the next iteration
-
-        return result
-
-
-    def distance(point1, point2):
-        return math.sqrt((point2[0] - point1[0])**2 + (point2[1] - point1[1])**2)
-
-    def area(pos):
-        side_length = distance((pos[0], pos[1]), (pos[2], pos[3]))
-        return side_length ** 2
-
-    def display_result(result, frame):
-        font = cv2.FONT_HERSHEY_SIMPLEX
-        size = 0.6
-        color = (255, 255, 0)  # Blue color
-        thickness = 2
-
-        for obj in result:
-            pos = obj['pos']
-            scale_x = CAMERA_WIDTH / INPUT_WIDTH_AND_HEIGHT
-            scale_y = CAMERA_HEIGHT / INPUT_WIDTH_AND_HEIGHT
-            x1 = int(pos[0] * scale_x)
-            y1 = int(pos[1] * scale_y)
-            x2 = int(pos[2] * scale_x)
-            y2 = int(pos[3] * scale_y)
-
-            cv2.putText(frame, 'Tennis Ball', (x1, y1), font, size, color, thickness)
-            cv2.rectangle(frame, (x1, y1), (x2, y2), color, thickness)
-
-            center = bboxCenterPoint(x1, y1, x2, y2)
-            calculate_direction(center[0])
-        
-        cv2.imshow('Tracking!', frame)
-        #shared_queue.put(frame)
-
-    def bboxCenterPoint(x1, y1, x2, y2):
-        bbox_center_x = int((x1 + x2) / 2)
-        bbox_center_y = int((y1 + y2) / 2)
-
-        return [bbox_center_x, bbox_center_y]
-
-    def calculate_direction(X, frame_width=CAMERA_WIDTH):
-        increment = frame_width / 3
-        if ((2*increment) <= X <= frame_width):
-            ball_queue.put(1)
-        elif (0 <= X < increment):
-            ball_queue.put(-1)
-        elif (increment <= X < (2*increment)):
-            ball_queue.put(0)
-
-    # Set up Camera
-    cap = cv2.VideoCapture(0)
-    cap.set(cv2.CAP_PROP_FRAME_WIDTH, CAMERA_WIDTH)
-    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, CAMERA_HEIGHT)
-    cap.set(cv2.CAP_PROP_FPS, 30)
-
-    print("Set up Camera")
-
-    # Set up Interpreter
-    interpreter = edgetpu.make_interpreter(model_path, device = 'usb')
-    interpreter.allocate_tensors()
-
-    input_details = interpreter.get_input_details()
-
-    # Get Width and Height
-    input_shape = input_details[0]['shape']
-    height = input_shape[1]
-    width = input_shape[2]
-
-    input_index = input_details[0]['index']
-    
-    print("Set up Interpreter!")
-
-    while True:
-
-        ret, frame = cap.read()
-        
-        if not ret:
-            print('Capture failed')
-            break
-        
-        image = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
-        image = image.resize((width, height))
-
-        top_result = process_image(interpreter, image, input_index)
-
-        display_result(top_result, frame)
-        
-    cap.release()
-    cv2.destroyAllWindows()
 
 def lidar_thread_funct(controller):
     # global lidar
@@ -1114,10 +972,6 @@ pi_gui_table_thread.start()
 driver_thread = threading.Thread(target=driver_thread_funct, args=(controller,))
 driver_thread.daemon = True
 driver_thread.start()
-
-ball_thread = threading.Thread(target=ball_thread_funct, args=(controller,))
-ball_thread.daemon = True
-ball_thread.start()
 
 # lidar_thread = threading.Thread(target=lidar_thread_funct, args=(controller,))
 # lidar_thread.daemon = True
