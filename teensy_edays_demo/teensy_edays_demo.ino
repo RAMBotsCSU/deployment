@@ -403,7 +403,7 @@ void loop() {
         gyro_demo(joystickArr[3],joystickArr[4]);
         break;
       case 4: // machine learning - purple
-        look_up_or_down(joystickArr[2],joystickArr[5]);
+        openDogWalkCycle(joystickArr[1],joystickArr[0],joystickArr[3],joystickArr[2],joystickArr[5],false);
         break;
       case 5: // dance - green
         danceMode(dpadArr[0],dpadArr[2],dpadArr[1],dpadArr[3]);
