@@ -706,8 +706,8 @@ def lidar_thread_funct(controller):
     output_file = 'lidar_data.csv'
 
     # Define Parameters
-    red_dot_threshold = 750 # 500=.5m (?); threshhold for detecting close object
-    white_dot_threshold = 2400 # furthest distance factored into calculations
+    red_dot_threshold = 700 # 500=.5m (?); threshhold for detecting close object
+    white_dot_threshold = 2000 # furthest distance factored into calculations
 
     print("Lidar setup initialized.\nPrinted Map Range: ", white_dot_threshold/1000, " m"
            " m\nStop proximity: ", red_dot_threshold/1000, " m")
@@ -722,8 +722,8 @@ def lidar_thread_funct(controller):
             distance = float(data[angle])
             if distance > 0:                  # ignore initially ungathered data points
                 radians = angle * pi / 180.0
-                y = distance * cos(radians)
-                x = -distance * sin(radians)
+                y = -distance * cos(radians)
+                x = distance * sin(radians)
                 point = (int(int(x)/scale_data + map_width/2), int(int(y)/scale_data + map_width/2))
                 if distance <= red_dot_threshold:
                     lcd.set_at(point, pygame.Color(255, 0, 0))
@@ -781,9 +781,11 @@ def lidar_thread_funct(controller):
             except: 
                 print("Error connecting to lidar. Trying again")
                 time.sleep(1)
+            
     lidar = setup_lidar_connection()
     try:        
         while(True):
+
             try:
                 for scan in lidar.iter_scans():
                     for (_, angle, distance) in scan:
@@ -791,7 +793,7 @@ def lidar_thread_funct(controller):
                     update_lidar_map(scan_data)
 
                     if controller.running_stop_mode:
-                        if (time.time() - starttime) > 0.1: # every .1s
+                        if (time.time() - starttime) > 0.05: # every .05s
                             starttime = time.time() # restart timer
                             dist_buffer.append(scan_data) # add new data set to dist_buffer
                             if len(dist_buffer) > window: # more data sets than window parameter
@@ -806,7 +808,7 @@ def lidar_thread_funct(controller):
 
                 if controller.running_autonomous_walk:
 
-                    if time.time() - start_time > .2:
+                    if time.time() - start_time > 0.2:
                         start_time = time.time()
                         lidar_view = scan_data
                         runLidarInference(scan_data, interpreter)
@@ -832,6 +834,7 @@ def lidar_thread_funct(controller):
                 lidar.disconnect()
                 print("Lidar stopped.")
                 lidar = setup_lidar_connection()
+
     except KeyboardInterrupt:
         print("Program Ended")
     finally:
