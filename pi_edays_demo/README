@@ -1,3 +1,30 @@
-/* def kill_program():
- * Purpose: This function is called to terminate the program
- */
+def kill_program():
+  Purpose: This function is called to terminate the program.
+  Input: None.
+  Output: None.
+
+def playSound(soundStr):
+  Purpose: If audio is enabled, play audio 'soundStr'
+  Input: soundStr
+  Output: None.
+
+def gui_handler(controller, window):
+  Purpose: Manage the GUI
+  Input: controller, window
+  Output: None.
+
+def gui_table_handler(controller):
+  Purpose: Processes controller input to interface with the GUI
+  Input: controller
+  Output: None.
+
+def startML():
+  Purpose: Indicates to the user that machine learning is starting. Does not call ML.
+  Input: None.
+  Output: None.
+
+def killML():
+  Purpose: Indicates to the user that machine learning is ending. Does not end ML.
+  Input: None.
+  Output: None.
+
