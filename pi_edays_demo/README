@@ -1,1 +1,3 @@
-
+/* def kill_program():
+ * Purpose: This function is called to terminate the program
+ */
