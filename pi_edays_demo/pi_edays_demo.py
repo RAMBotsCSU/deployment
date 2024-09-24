@@ -1,35 +1,66 @@
+#Import Controller class from the pyPS4Controller library
 from pyPS4Controller.controller import Controller
+#Grants access to the serial port for external hardware
 import serial
+#Allows code to be ran concurrently on multiple threads
 import threading
+#Allows time for time-related functions
 import time
+#Allows code to spawn new processes, connect to their input/output/error pipes, and obtain their return codes
 import subprocess
+#Grants access to the Operating System to read/write, create directories, or get environment information
 import os
+#Library for creating multimedia applications
 import pygame
+#Imports mixer for audio playback
 from pygame import mixer
+#Allows code to generate random numbers
 import random
+#Assists with handling errors due to serial communication
 from serial.serialutil import SerialException
+#Used for creating user interfaces
 import PySimpleGUI as sg
+#Assists with handling asynchronous events
 import signal
+#Imports cos, sin, and pi
 from math import cos, sin, pi
+#Allows import/export of CSV files
 import csv
+#Allows communcation with LiDAR
 from adafruit_rplidar import RPLidar
 # from rplidar import RPLidar
+#Allows use of thread safe cues so different threads can exhange information without interrupt
 import queue
+#Allows code to work with TPU's for machine learning
 from pycoral.utils import edgetpu
+#Numerical Computation Library
 import numpy as np
+#Allows scaling of values to a specified range
 from sklearn.preprocessing import MinMaxScaler
+#TODO: Redundant time import, needs refactor
 import time
+#Grants access to system specific parameters and functions
 import sys
 #FOR ML MODE
+#Provides functions for regular expressions
 import re
+#Imports OpenCV2 for image and video processing
 import cv2
+#TODO: Redundant numpy import, needs refactor
 import numpy as np
+#TODO: Imports full package of math, may need to refactor other imports
 import math
+#Imports EdgeTPU for use with the coral
 from pycoral.utils import edgetpu
+#Imports dataset module from PyCoral for working with datasets
 from pycoral.utils import dataset
+#Imports utilities for managing model data inputs and outputs in the Coral framework, helping to interface with TensorFlow Lite models on Edge TPUs.
 from pycoral.adapters import common
+#Imports classification utilities from PyCoral, which assist in classifying images or other inputs using machine learning models.
 from pycoral.adapters import classify
+#This imports the TensorFlow Lite runtime, which is a lightweight version of TensorFlow for running deep learning models on edge devices.
 import tflite_runtime.interpreter as tflite
+#The Python Imaging Library (PIL) is used to open, manipulate, and save image files in various formats.
 from PIL import Image
 
 ball_queue = queue.Queue()
