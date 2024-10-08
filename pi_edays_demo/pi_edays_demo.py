@@ -19,6 +19,7 @@ import random
 #Assists with handling errors due to serial communication
 from serial.serialutil import SerialException
 #Used for creating user interfaces
+## class gui
 import PySimpleGUI as sg
 #Assists with handling asynchronous events
 import signal
@@ -68,19 +69,27 @@ ball_queue = queue.Queue()
 shared_queue = queue.Queue() # for sharing data across two threads
 lidar_view = []
 
+## class gui
 sg.theme('DarkGreen2')
 
+## class gui
+# used in tab1_layout, update_table_cell, gui_table_handler
 table = None
 
+## class main ?
 # Get the process ID of the current process
 pid = os.getpid()
 
+## class gui
+# currently unused - for TODO volume settings
 # Slider settings
 slider_min = 0
 slider_max = 100
 slider_default = 100
 slider_step = 1
 
+## class gui
+# initial gui layout
 tab1_layout = [
     [
         sg.Column([[sg.T('MOVEMENT ARRAY', font=("Helvetica", 14))]]),
@@ -106,11 +115,18 @@ tab1_layout = [
     [sg.Image('./Resources/RamBOTs_Logo_Small.png')],
 ]
 
+## class gui
+# only used here and in window as argument
 layout = [tab1_layout]
 
+## class gui or main ?
+# used by gui_handler and lidar_thread_funct
 window = sg.Window('RamBOTs', layout, size=(800, 420))
 
+## class lidar or class main ?
+# flag raised to indicate override of controller values if obstacle is detected
 STOP_FLAG = False
+
 
 AUDIO_ENABLED = True
 audio_dict = {"startMLSound": None, 
@@ -215,8 +231,11 @@ def playSound(soundStr):
         pygame.mixer.Sound.play(audio_dict[soundStr])
 
 
+## class gui
 # gui_handler(controlled, window)
-# Manages the GUI
+# called by threading.thread
+# opens and continuously updates the GUI with parameters from window
+# controller is not used?
 def gui_handler(controller,window): # manage the GUI
 
     print("hello from gui")
@@ -226,13 +245,16 @@ def gui_handler(controller,window): # manage the GUI
             print("brealong")
             break
 
-
-#
-#
-#
+## class gui
+# update_table_cell(table, row, col, value)
+# updates specified row and col in table with controller inputs
 def update_table_cell(table, row, col, value):
     table.Widget.set(table.Widget.get_children()[row], "#" + str(col + 1), value)
 
+## class gui
+# gui_table_handler(controller)
+# called by threading.thread
+# updates table values for gui every 0.1 seconds
 def gui_table_handler(controller): # update the GUI table with controller inputs every x seconds
     print("hello from gui handler")
     global table
@@ -1135,7 +1157,7 @@ class MyController(Controller):
 
     def on_L2_release(self):
         self.triggerL = 0
-
+# end of class
 
 
 print("hello world")
