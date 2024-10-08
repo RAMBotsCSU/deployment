@@ -196,7 +196,9 @@ if (AUDIO_ENABLED):
                     "error": error
                     }
 
-
+# kill_program()
+# This function is used to kill the program when called
+# TODO: needs exception called 
 def kill_program():
     # Send SIGTERM signal
     os.kill(pid, signal.SIGTERM)
@@ -205,10 +207,16 @@ def kill_program():
     os.kill(pid, signal.SIGINT) 
 
 
+# playSound(soundStr)
+# If audio is enabled, and this function is called, audio will play
+# TODO: All audio related functions can be added to its own class and called as needed
 def playSound(soundStr):
     if (AUDIO_ENABLED):
         pygame.mixer.Sound.play(audio_dict[soundStr])
 
+
+# gui_handler(controlled, window)
+# Manages the GUI
 def gui_handler(controller,window): # manage the GUI
 
     print("hello from gui")
@@ -218,6 +226,10 @@ def gui_handler(controller,window): # manage the GUI
             print("brealong")
             break
 
+
+#
+#
+#
 def update_table_cell(table, row, col, value):
     table.Widget.set(table.Widget.get_children()[row], "#" + str(col + 1), value)
 
