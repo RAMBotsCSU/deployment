@@ -274,26 +274,34 @@ def gui_table_handler(controller): # update the GUI table with controller inputs
             update_table_cell(table, 6, 1, f"□:{controller.shapeButtonArr[0]}  △:{controller.shapeButtonArr[1]}  ○:{controller.shapeButtonArr[2]}  X:{controller.shapeButtonArr[3]}")
             update_table_cell(table, 7, 1, f"Sh:{controller.miscButtonArr[0]},Op:{controller.miscButtonArr[1]},Ps:{controller.miscButtonArr[2]},L3:{controller.miscButtonArr[3]},R3:{controller.miscButtonArr[4]}")
             update_table_cell(table, 8, 1, f"Trim: {controller.trim}")
+            
         time.sleep(0.1)
 
 
-
+# called when triangle press in ml mode
 def startML():
     playSound("startMLSound")
     print("starting machine learning!")
 
-
-
+# called when triangle press in ml mode
 def killML():
     playSound("stopMLSound")
     print("killing machine learning.")
 
-
+## class lidar
+# postprocess_prediction(output_values)
+# called by run_lidar_inference
+# part of lidar ml path prediction
+# 
 def postprocess_prediction(output_values):
     dequantized_prediction = (output_values.astype(np.float32) / 255.0).reshape(1, -1)
     prediction_reversed = dequantized_prediction * 2
     return prediction_reversed
 
+## class lidar
+# preprocess_lidar_data(lidar_data)
+# called by runLidarInference
+# normalize lidar_data to range [0, 1]
 def preprocess_lidar_data(lidar_data):
     lidar_max_value = 12000
     uint8_max_value = 255
