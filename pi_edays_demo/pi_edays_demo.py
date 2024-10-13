@@ -127,8 +127,10 @@ window = sg.Window('RamBOTs', layout, size=(800, 420))
 # flag raised to indicate override of controller values if obstacle is detected
 STOP_FLAG = False
 
-
+# flag for audio, may leave in main thread
 AUDIO_ENABLED = True
+
+## audio class
 audio_dict = {"startMLSound": None, 
               "stopMLSound": None,
               "walkMode": None,
@@ -147,6 +149,7 @@ audio_dict = {"startMLSound": None,
               "error": None
               }
 
+## audio class
 if (AUDIO_ENABLED):
 
     mixer.init()
@@ -277,12 +280,12 @@ def gui_table_handler(controller): # update the GUI table with controller inputs
             
         time.sleep(0.1)
 
-
+## audio class 
 # called when triangle press in ml mode
 def startML():
     playSound("startMLSound")
     print("starting machine learning!")
-
+## audio class 
 # called when triangle press in ml mode
 def killML():
     playSound("stopMLSound")
@@ -292,7 +295,6 @@ def killML():
 # postprocess_prediction(output_values)
 # called by run_lidar_inference
 # part of lidar ml path prediction
-# 
 def postprocess_prediction(output_values):
     dequantized_prediction = (output_values.astype(np.float32) / 255.0).reshape(1, -1)
     prediction_reversed = dequantized_prediction * 2
@@ -311,6 +313,10 @@ def preprocess_lidar_data(lidar_data):
     data_mapped = (data_normalized * uint8_max_value).astype(np.uint8)
     return data_mapped
 
+## class lidar
+# runLidarInference(lidar_data, interpreter)
+# run ML model for autonomous_walk lidar mode
+# get outputs from tflite model on lidar data
 def runLidarInference(lidar_data, interpreter):
     if len(lidar_data) == 360:
         print("Running lidar inference")
@@ -340,7 +346,8 @@ def runLidarInference(lidar_data, interpreter):
     else:
         print("lidar view data incorrect")
 
-
+## audio class
+# playModeSounds(mode)
 def playModeSounds(mode):
     # stopSounds()
     if mode == 0:
@@ -370,6 +377,8 @@ def playModeSounds(mode):
 #    for sound in songs:
 #        sound.stop()
 
+## audio class
+# playSongs(song)
 def playSongs(song):
     if(song == -1):
         playSound(random.choice(["song1", "song2", "song3", "song4"]))
@@ -382,6 +391,9 @@ def playSongs(song):
     elif(song == 4):
         playSound("song4")
 
+## driver class
+# rgb(m)
+# controls lighting on controller (maybe)
 def rgb(m):
     bashCommand, filename = os.path.split(os.path.abspath(__file__))
     bashCommand = "sudo bash " + bashCommand + "/controllerColor.sh "
@@ -403,10 +415,14 @@ def rgb(m):
         bashCommand = bashCommand + "255 0 0"
     subprocess.Popen(bashCommand.split(), stdout=subprocess.PIPE)
 
+## class driver
+## joystick_map_to_range
 def joystick_map_to_range(original_value):
     mapped_value = ((original_value + 32767) / 65535) * 2 - 1
     return mapped_value
 
+## class driver
+# trigger_map_to range
 #Function to map a range of [-65534,65198] to [-1,1] with 0 in the middle
 def trigger_map_to_range(value):
     if(value < 0):
@@ -421,6 +437,9 @@ def trigger_map_to_range(value):
 #    newValue = (value+168)/65366
 #    return newValue
 
+## driver class
+# value_checker(odrive_values, correct_values)
+# checks odrive values
 def value_checker(odrive_values, correct_values):
     #checks the values against the correct values
 
@@ -440,7 +459,10 @@ def value_checker(odrive_values, correct_values):
             error_dict[key] = actual_value
 
     return (len(error_dict) == 0, error_dict)
-        
+
+## class driver
+# check_odrive_params(input_dict)
+# checks odrive vs expected params
 def check_odrive_params(input_dict):
     correct_values_axis0 = {'encoder.config.abs_spi_cs_gpio_pin': '7.00', 'encoder.config.cpr': '16384.00', 'encoder.config.mode': '257.00', 'motor.config.current_lim': '22.00', 'motor.config.current_lim_margin': '9.00', 'motor.config.pole_pairs': '20.00', 'motor.config.torque_constant': '0.03', 'controller.config.vel_gain': '0.10', 'controller.config.vel_integrator_gain': '0.08', 'controller.config.vel_limit': ''}
     correct_values_axis1 = {'encoder.config.abs_spi_cs_gpio_pin': '8.00', 'encoder.config.cpr': '16384.00', 'encoder.config.mode': '257.00', 'motor.config.current_lim': '22.00', 'motor.config.current_lim_margin': '9.00', 'motor.config.pole_pairs': '20.00', 'motor.config.torque_constant': '0.03', 'controller.config.vel_gain': '0.10', 'controller.config.vel_integrator_gain': '0.08', 'controller.config.vel_limit': ''}
@@ -465,12 +487,18 @@ def check_odrive_params(input_dict):
     
     return (len(error_list) == 0, error_list)
 
+## class driver
+# padStr(val)
+# process output data to teensy
 def padStr(val):
     for _ in range (120-len(val)):
         val = val + "~"
     return val
 
-#Function to remove all ~ padding
+## class driver
+# rmPadStr(val)
+# process input data from teensy
+# function to remove all ~ padding
 def rmPadStr(val):
     outputStr = ""
     for curChar in val:
@@ -478,22 +506,36 @@ def rmPadStr(val):
             outputStr += curChar
     return outputStr
 
+## class driver
+# serial_read_write(string, ser)
+# send values to teensy
 def serial_read_write(string, ser): # use time library to call every 10 ms in separate thread
     ser.write(padStr(string).encode())
     return getLineSerial(ser)
 
+## class driver
+# getLineSerial(ser)
+# gets info from teensy
 def getLineSerial(ser):
     line = str(ser.readline())
     line = line[2:-5]
     line = rmPadStr(line)
     return line
 
+## class driver
+# any_greater_than_one(arr)
+# determines if trim is needed - I think to compensate for tilting or turning
 def any_greater_than_one(arr):
     for value in arr:
         if value > 1.1 or value < 0.9:
             return True
     return False
 
+## class driver
+# driver_thread_funct
+# updates values to be sent to teensy from controller or other control sources (ball_funct, lidar)
+# uses STOP_FLAG
+# uses shared_queue (driver thread-lidar thread) and ball_queue (driver thread-ml thread)
 def driver_thread_funct(controller):
     global STOP_FLAG
     playSound(random.choice(["startup1"]*19 + ["startup2"]*1)) # dont mind this line
@@ -511,8 +553,7 @@ def driver_thread_funct(controller):
                      "odrive5": {"axis0":{}, "axis1": {}},
                      "odrive6": {"axis0":{}, "axis1": {}}}
     #hasCheckedOdrives = False
-
-    #running section
+    
     while True:
 
         runningMode = controller.mode
@@ -562,6 +603,7 @@ def driver_thread_funct(controller):
         response = serial_read_write(data, ser)
         # print("Output:", response)
 
+        # something with odrives
         if (runningMode == 6):
             line = getLineSerial(ser)
             print(line)
@@ -605,35 +647,9 @@ def driver_thread_funct(controller):
                             value = line.split(" ")[2]
                             odrive_params[curr_odrive][axis][key] = value
 
-
-
-# def setup_lidar_connection():
-#     # Setup the RPLidar
-#     PORT_NAME = '/dev/ttyUSB0'
-
-#     while True:
-#         try:
-#             # lidar = RPLidar(None, PORT_NAME, timeout=1)
-#             # print("Lidar connected", lidar.info)
-#             # # lidar.clear_input()
-
-#             lidar = RPLidar(PORT_NAME)
-
-#             info = lidar.get_info()
-#             print(info)
-
-#             # health = lidar.get_health()
-#             # print(health)
-#             break
-#         except Exception as e:
-#             print(e)
-#             print("Error connecting to lidar. Trying again")
-#             time.sleep(1)
-#     return lidar
-
-# global lidar
-# lidar = setup_lidar_connection()
-
+## class AI
+# ball_thread_funct(controller)
+# runs ML model for tennis ball tracking
 def ball_thread_funct(controller):
     # global TURN_FACTOR
     #Create Variables
@@ -766,6 +782,9 @@ def ball_thread_funct(controller):
     cap.release()
     cv2.destroyAllWindows()
 
+## class lidar
+# lidar_thread_funct(controller) 
+# contains lidar map, stop mode, and ML path following model
 def lidar_thread_funct(controller):
     # global lidar
     global lidar_view
@@ -777,7 +796,6 @@ def lidar_thread_funct(controller):
     lcd = pygame.display.set_mode((map_width, map_width))
     lcd.fill((0,0,0))
     pygame.display.update()
-
 
     #Create variables
     model_path = '../../machine_learning/lidar_model_quantized_edgetpu.tflite'
@@ -854,6 +872,8 @@ def lidar_thread_funct(controller):
     
     PORT_NAME = '/dev/ttyUSB0'
 
+    ## setup_lidar_connection
+    # trying to connect to lidar
     def setup_lidar_connection():
         while(True):
             try:
@@ -888,6 +908,7 @@ def lidar_thread_funct(controller):
                                     STOP_FLAG = False
                                     print("STOP_FLAG reset. Okay to walk.")
 
+                # running ML model for navigating hallways around BC infill
                 if controller.running_autonomous_walk:
 
                     if time.time() - start_time > 0.2:
@@ -924,8 +945,9 @@ def lidar_thread_funct(controller):
         lidar.disconnect()
         print("Lidar stopped.")
     
-
-
+## controller class
+# MyController(Controller)
+# initiates the controller and maps controller input to functions
 class MyController(Controller):
 
     def __init__(self, **kwargs):
@@ -1167,9 +1189,10 @@ class MyController(Controller):
         self.triggerL = 0
 # end of class
 
-
+## start of main thread, no functions beyond this point
 print("hello world")
 
+# connect to teensy
 try:
     ser = serial.Serial('/dev/ttyACM0', 9600)
 except SerialException as e:
@@ -1179,35 +1202,40 @@ except SerialException as e:
 
     kill_program()
 
-
+# initiate remote controller
 controller = MyController(interface="/dev/input/js0", connecting_using_ds4drv=False)
 
+## initiates gui interface
 pi_gui_thread = threading.Thread(target=gui_handler, args=(controller,window))
 pi_gui_thread.daemon = True
 pi_gui_thread.start()
 
 time.sleep(3) # give GUI time to wake up
 
+## initiates pi_gui_table
 pi_gui_table_thread = threading.Thread(target=gui_table_handler, args=(controller,))
 pi_gui_table_thread.daemon = True
 pi_gui_table_thread.start()
 
+## initiates driver thread
 driver_thread = threading.Thread(target=driver_thread_funct, args=(controller,))
 driver_thread.daemon = True
 driver_thread.start()
 
+## initiates machine learning
 ball_thread = threading.Thread(target=ball_thread_funct, args=(controller,))
 ball_thread.daemon = True
 ball_thread.start()
 
+## initiates lidar
+# lidar_thread_funct called in main thread, not seperate thread
 # lidar_thread = threading.Thread(target=lidar_thread_funct, args=(controller,))
 # lidar_thread.daemon = True
 # lidar_thread.start()
+lidar_thread_funct(controller)
 
 # controller.listen()
 
 dthread = threading.Thread(target=controller.listen)
 dthread.daemon = True
 dthread.start()
-
-lidar_thread_funct(controller)
