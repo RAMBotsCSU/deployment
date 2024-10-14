@@ -1,72 +1,4 @@
-#Import Controller class from the pyPS4Controller library
-from pyPS4Controller.controller import Controller
-#Grants access to the serial port for external hardware
-import serial
-#Allows code to be ran concurrently on multiple threads
-import threading
-#Allows time for time-related functions
-import time
-#Allows code to spawn new processes, connect to their input/output/error pipes, and obtain their return codes
-import subprocess
-#Grants access to the Operating System to read/write, create directories, or get environment information
-import os
-#Library for creating multimedia applications
-import pygame
-#Imports mixer for audio playback
-from pygame import mixer
-#Allows code to generate random numbers
-import random
-#Assists with handling errors due to serial communication
-from serial.serialutil import SerialException
-#Used for creating user interfaces
-## class gui
-import PySimpleGUI as sg
-#Assists with handling asynchronous events
-import signal
-#Imports cos, sin, and pi
-from math import cos, sin, pi
-#Allows import/export of CSV files
-import csv
-#Allows communcation with LiDAR
-from adafruit_rplidar import RPLidar
-# from rplidar import RPLidar
-#Allows use of thread safe cues so different threads can exhange information without interrupt
-import queue
-#Allows code to work with TPU's for machine learning
-from pycoral.utils import edgetpu
-#Numerical Computation Library
-import numpy as np
-#Allows scaling of values to a specified range
-from sklearn.preprocessing import MinMaxScaler
-#TODO: Redundant time import, needs refactor
-import time
-#Grants access to system specific parameters and functions
-import sys
-#FOR ML MODE
-#Provides functions for regular expressions
-import re
-#Imports OpenCV2 for image and video processing
-import cv2
-#TODO: Redundant numpy import, needs refactor
-import numpy as np
-#TODO: Imports full package of math, may need to refactor other imports
-import math
-#Imports EdgeTPU for use with the coral
-from pycoral.utils import edgetpu
-#Imports dataset module from PyCoral for working with datasets
-from pycoral.utils import dataset
-#Imports utilities for managing model data inputs and outputs in the Coral framework, helping to interface with TensorFlow Lite models on Edge TPUs.
-from pycoral.adapters import common
-#Imports classification utilities from PyCoral, which assist in classifying images or other inputs using machine learning models.
-from pycoral.adapters import classify
-#This imports the TensorFlow Lite runtime, which is a lightweight version of TensorFlow for running deep learning models on edge devices.
-import tflite_runtime.interpreter as tflite
-#The Python Imaging Library (PIL) is used to open, manipulate, and save image files in various formats.
-from PIL import Image
 
-ball_queue = queue.Queue()
-
-shared_queue = queue.Queue() # for sharing data across two threads
 lidar_view = []
 
 ## class gui
@@ -127,93 +59,6 @@ window = sg.Window('RamBOTs', layout, size=(800, 420))
 # flag raised to indicate override of controller values if obstacle is detected
 STOP_FLAG = False
 
-# flag for audio, may leave in main thread
-AUDIO_ENABLED = True
-
-## audio class
-audio_dict = {"startMLSound": None, 
-              "stopMLSound": None,
-              "walkMode": None,
-              "pushUpsMode": None,
-              "legControlMode": None,
-              "gyroMode": None,
-              "machineLearningMode": None,
-              "danceMode": None,
-              "song1": None,
-              "song2": None,
-              "song3": None,
-              "song4": None,
-              "startup1": None,
-              "startup2": None,
-              "pause": None,
-              "error": None
-              }
-
-## audio class
-if (AUDIO_ENABLED):
-
-    mixer.init()
-    audioFolder = 'Resources/Sounds/'
-    #used sounds
-    startup1 = pygame.mixer.Sound(audioFolder + 'Other/startup_1.mp3')
-    startup2 = pygame.mixer.Sound(audioFolder + 'Other/startup_2.mp3')
-    error = pygame.mixer.Sound(audioFolder + 'Other/error.mp3')
-    pause = pygame.mixer.Sound(audioFolder + 'Other/pause.mp3')
-    startMLSound = pygame.mixer.Sound(audioFolder + 'Other/starting_ML.mp3')
-    stopMLSound = pygame.mixer.Sound(audioFolder + 'Other/stopping_ML.mp3')
-
-    walkMode = pygame.mixer.Sound(audioFolder + 'Mode_Switch/walking.mp3')
-    pushUpsMode = pygame.mixer.Sound(audioFolder + 'Mode_Switch/push_ups.mp3')
-    legControlMode = pygame.mixer.Sound(audioFolder + 'Mode_Switch/leg_control.mp3')
-    gyroMode = pygame.mixer.Sound(audioFolder + 'Mode_Switch/gyro.mp3')
-    machineLearningMode = pygame.mixer.Sound(audioFolder + 'Mode_Switch/machine_learning.mp3')
-    danceMode = pygame.mixer.Sound(audioFolder + 'Mode_Switch/dance_mode.mp3')
-
-    song1 = pygame.mixer.Sound(audioFolder + 'Songs/mayahe.mp3')
-    song2 = pygame.mixer.Sound(audioFolder + 'Songs/WhoLetTheDogsOut.mp3')
-    song3 = pygame.mixer.Sound(audioFolder + 'Songs/Crazy_La_Paint.mp3')
-    song4 = pygame.mixer.Sound(audioFolder + 'Songs/Party_Rock.mp3')
-
-
-
-    #set volumes
-    startup1.set_volume(0.2)
-    startup2.set_volume(0.125)
-    pause.set_volume(0.4)
-    error.set_volume(0.25)
-    startMLSound.set_volume(0.4)
-    stopMLSound.set_volume(0.4)
-
-    walkMode.set_volume(0.5)
-    pushUpsMode.set_volume(0.5)
-    legControlMode.set_volume(0.5)
-    gyroMode.set_volume(0.5)
-    machineLearningMode.set_volume(0.5)
-    danceMode.set_volume(0.45)
-
-    song1.set_volume(0.25) #mayahe
-    song2.set_volume(0.2) #Who let the dogs out
-    song3.set_volume(0.2) #crazy la pint
-    song4.set_volume(0.25) #party rock
-
-    audio_dict = {
-                    "startMLSound": startMLSound, 
-                    "stopMLSound": stopMLSound,
-                    "walkMode": walkMode,
-                    "pushUpsMode": pushUpsMode,
-                    "legControlMode": legControlMode,
-                    "gyroMode": gyroMode,
-                    "machineLearningMode": machineLearningMode,
-                    "danceMode": danceMode,
-                    "song1": song1,
-                    "song2": song2,
-                    "song3": song3,
-                    "song4": song4,
-                    "startup1": startup1,
-                    "startup2": startup2,
-                    "pause": pause,
-                    "error": error
-                    }
 
 # kill_program()
 # This function is used to kill the program when called
@@ -225,13 +70,6 @@ def kill_program():
     # Or send SIGINT signal (equivalent to pressing Ctrl+C)
     os.kill(pid, signal.SIGINT) 
 
-
-# playSound(soundStr)
-# If audio is enabled, and this function is called, audio will play
-# TODO: All audio related functions can be added to its own class and called as needed
-def playSound(soundStr):
-    if (AUDIO_ENABLED):
-        pygame.mixer.Sound.play(audio_dict[soundStr])
 
 
 ## class gui
@@ -346,50 +184,6 @@ def runLidarInference(lidar_data, interpreter):
     else:
         print("lidar view data incorrect")
 
-## audio class
-# playModeSounds(mode)
-def playModeSounds(mode):
-    # stopSounds()
-    if mode == 0:
-        playSound("walkMode")
-        window['-MODE_TEXT-'].update("MODE 1: WALK")
-    elif mode == 1:
-        playSound("pushUpsMode")
-        window['-MODE_TEXT-'].update("MODE 2: PUSH-UPS")
-    elif mode == 2:
-        playSound("legControlMode")
-        window['-MODE_TEXT-'].update("MODE 3: LEG CONTROL")
-    elif mode == 3:
-        playSound("gyroMode")
-        window['-MODE_TEXT-'].update("MODE 4: GYRO CONTROL")
-    elif mode == 4:
-        playSound("machineLearningMode")
-        window['-MODE_TEXT-'].update("MODE 5: MACHINE LEARNING")
-    elif mode == 5:
-        playSound("danceMode")
-        window['-MODE_TEXT-'].update("MODE 6: DANCE")
-        playSongs(-1)
-
-
-#def stopSounds():
-#    for sound in mode_sounds:
-#        sound.stop()
-#    for sound in songs:
-#        sound.stop()
-
-## audio class
-# playSongs(song)
-def playSongs(song):
-    if(song == -1):
-        playSound(random.choice(["song1", "song2", "song3", "song4"]))
-    elif(song == 1):
-        playSound("song1")
-    elif(song == 2):
-        playSound("song2")
-    elif(song == 3):
-        playSound("song3")
-    elif(song == 4):
-        playSound("song4")
 
 ## driver class
 # rgb(m)
@@ -506,12 +300,6 @@ def rmPadStr(val):
             outputStr += curChar
     return outputStr
 
-## class driver
-# serial_read_write(string, ser)
-# send values to teensy
-def serial_read_write(string, ser): # use time library to call every 10 ms in separate thread
-    ser.write(padStr(string).encode())
-    return getLineSerial(ser)
 
 ## class driver
 # getLineSerial(ser)
@@ -531,121 +319,6 @@ def any_greater_than_one(arr):
             return True
     return False
 
-## class driver
-# driver_thread_funct
-# updates values to be sent to teensy from controller or other control sources (ball_funct, lidar)
-# uses STOP_FLAG
-# uses shared_queue (driver thread-lidar thread) and ball_queue (driver thread-ml thread)
-def driver_thread_funct(controller):
-    global STOP_FLAG
-    playSound(random.choice(["startup1"]*19 + ["startup2"]*1)) # dont mind this line
-    runningMode = 0
-    joystickArr = [0.000, 0.000, 0.000, 0.000, 0.000, 0.000]
-    rgb(0)
-    #gui_update_counter = 0
-    inferred_values = [0.000, 0.000, 0.000, 0.000, 0.000, 0.000] # gets updated by machine learning inference
-    
-    curr_odrive = ""
-    odrive_params = {"odrive1": {"axis0":{}, "axis1": {}},
-                     "odrive2": {"axis0":{}, "axis1": {}},
-                     "odrive3": {"axis0":{}, "axis1": {}},
-                     "odrive4": {"axis0":{}, "axis1": {}},
-                     "odrive5": {"axis0":{}, "axis1": {}},
-                     "odrive6": {"axis0":{}, "axis1": {}}}
-    #hasCheckedOdrives = False
-    
-    while True:
-
-        runningMode = controller.mode
-        paused = controller.paused
-        # get controller values
-        joystickArr = [joystick_map_to_range(controller.l3_horizontal),    # 0 = strafe, leftStick/L3 Left-Right
-                       joystick_map_to_range(controller.l3_vertical),      # 1 = forback, leftStick/L3 Up-Down
-                       joystick_map_to_range(controller.triggerL),         # 2 = roll, triggerL/L2
-                       joystick_map_to_range(controller.r3_horizontal),    # 3 = turn, rightStick/R3 Left-Right
-                       joystick_map_to_range(controller.r3_vertical),      # 4 = pitch, rightStick/R3 Up-Down
-                       joystick_map_to_range(controller.triggerR)]         # 5 = does nothing, triggerR/R2
-        # Note : the joystickArr[4]/pitch is not used in walk mode
-
-        if controller.running_ML:
-            move = 0.000
-            if not ball_queue.empty():
-                move = ball_queue.get()
-            joystickArr = [0.000, 0.000, 0.000, move, 0.000, 0.000]
-
-        if controller.running_stop_mode and STOP_FLAG:
-            print("Signal Stop.")
-            joystickArr = [0.000, 0.000, 0.000, 0.000, 0.000, 0.000]
-
-        if controller.running_autonomous_walk:
-            if not shared_queue.empty():
-                inferred_values = shared_queue.get() # update inferred values from lidar thread
-            joystickArr = inferred_values # set joystickArr equal regardless of updating inferred_values
-            # Note: inferred values gets updated slower than data is output to teensy
-
-        # print("Joystick values:", joystickArr)
-
-        # remap values to range between 0 and 2 (controller outputs -1 to 1)
-        for x in range(len(joystickArr)):
-            joystickArr[x] += 1.000
-
-        if (any_greater_than_one(joystickArr)):
-            joystickArr[3] += controller.trim
-        
-        # Send data to the connected USB serial device
-        data = '''J0:{0:.3f},J1:{1:.3f},J2:{2:.3f},J3:{3:.3f},J4:{4:.3f},J5:{5:.3f},M:{6},LD:{7},RD:{8},UD:{9},DD:{10},Sq:{11},Tr:{12},Ci:{13},Xx:{14},Sh:{15},Op:{16},Ps:{17},L3:{18},R3:{19},#'''.format(joystickArr[0], joystickArr[1], joystickArr[2], joystickArr[3], joystickArr[4], joystickArr[5],
-        runningMode, controller.dpadArr[0], controller.dpadArr[1],
-        controller.dpadArr[2], controller.dpadArr[3], controller.shapeButtonArr[0],
-        controller.shapeButtonArr[1], controller.shapeButtonArr[2], controller.shapeButtonArr[3],
-        controller.miscButtonArr[0], controller.miscButtonArr[1], controller.miscButtonArr[2],
-        controller.miscButtonArr[3], controller.miscButtonArr[4])
-
-        response = serial_read_write(data, ser)
-        # print("Output:", response)
-
-        # something with odrives
-        if (runningMode == 6):
-            line = getLineSerial(ser)
-            print(line)
-            if ("odrive" in line):
-                # Header print statement indicating which odrive is being dumped
-                curr_odrive = line
-
-                while True:
-                    line = getLineSerial(ser)
-
-                    print(line)
-                    if ("END" in line):
-                        # runningMode = 0
-                        controller.mode = 0
-                        print("Params:",odrive_params)
-                        hasNoError, errorMsgs = check_odrive_params(odrive_params)
-                        if (not hasNoError):
-                            for msg in errorMsgs:
-                                print(msg)
-                            kill_program()
-                            sys.exit()
-                            
-                        else:
-                            print("Odrive params all good!")
-
-                        break
-
-                    elif ("odrive" in line):
-                        # Header print statement indicating which odrive is being dumped
-                        curr_odrive = line
-
-                    else:
-                        data_return_val_num = len(line.split(" "))
-                        if data_return_val_num == 2:
-                            key = line.split(" ")[0]
-                            value = line.split(" ")[1]
-                            odrive_params[curr_odrive][key] = value
-                        elif data_return_val_num == 3:
-                            axis = line.split(" ")[0]
-                            key = line.split(" ")[1]
-                            value = line.split(" ")[2]
-                            odrive_params[curr_odrive][axis][key] = value
 
 ## class AI
 # ball_thread_funct(controller)
