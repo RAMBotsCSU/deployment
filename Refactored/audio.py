@@ -10,6 +10,7 @@ class AudioManager:
         if self.AUDIO_ENABLED:
             mixer.init()
             audio_folder = 'Resources/Sounds/'
+            
             # Load audio files
             self.startup1 = pygame.mixer.Sound(audio_folder + 'Other/startup_1.mp3')
             self.startup2 = pygame.mixer.Sound(audio_folder + 'Other/startup_2.mp3')
@@ -69,11 +70,12 @@ class AudioManager:
                 "pause": self.pause,
                 "error": self.error
             }
-
+            
+# If audio is enabled, and this function is called, audio will play sound_key
     def play_sound(self, sound_key):
         if self.AUDIO_ENABLED and sound_key in self.audio_dict:
             pygame.mixer.Sound.play(self.audio_dict[sound_key])
-
+            
     def play_mode_sounds(self, mode):
         # Map modes to sound keys
         mode_sounds = {
@@ -88,6 +90,7 @@ class AudioManager:
         if sound_key:
             self.play_sound(sound_key)
 
+    # Takes in the song name, calls play_sound
     def play_songs(self, song):
         if song == -1:
             # Play a random song
