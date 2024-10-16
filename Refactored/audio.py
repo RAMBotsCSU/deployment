@@ -9,7 +9,7 @@ class AudioManager:
 
         if self.AUDIO_ENABLED:
             mixer.init()
-            audio_folder = 'Resources/Sounds/'
+            audio_folder = '/Resources/Sounds/'
             
             # Load audio files
             self.startup1 = pygame.mixer.Sound(audio_folder + 'Other/startup_1.mp3')
