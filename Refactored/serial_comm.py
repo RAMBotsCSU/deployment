@@ -5,7 +5,7 @@ import time
 import sys
 import os
 import random
-#from utilities import pad_str, get_line_serial, kill_program, any_greater_than_one, joystick_map_to_range, trigger_map_to_range
+from utilities import pad_str, get_line_serial, kill_program, any_greater_than_one, joystick_map_to_range, trigger_map_to_range
 
 class SerialComm:
   # TODO: Replace print statements with logger
