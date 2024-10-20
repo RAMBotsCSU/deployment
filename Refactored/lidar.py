@@ -3,7 +3,6 @@
 
 
 
-
 ## class lidar
 # lidar_thread_funct(controller) 
 # contains lidar map, stop mode, and ML path following model
