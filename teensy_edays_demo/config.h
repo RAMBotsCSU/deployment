@@ -1,6 +1,8 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+// LEFT FRONT LEG
+float offSet40 = 0.40;  // HIP
 float offSet51 = 0.75;  // SHOULDER
 float offSet50 = 0.89;  // KNEE
 
