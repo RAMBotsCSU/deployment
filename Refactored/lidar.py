@@ -1,7 +1,30 @@
+import os # acces the operating system
+import time # loop delays
+import pygame # lidar map display
+import queue # sharing information between threads
+from pycoral.utils import edgetpu # allows work with TPU's for machine learning
 
+class LidarHandler:
 
+    def __init__(self, shared_queue, port_name = '/dev/ttyUSB0'):
 
+        self.shared_queue = shared_queue
+        self.port_name = port_name
+        self.ready = False
 
+    def connect_to_lidar(self):
+        while(True):
+            try:
+                lidar = RPLidar(None, self.port_name, timeout=3)
+                print("Lidar connected.")
+                return lidar
+            except: 
+                print("Error connecting to lidar. Trying again")
+                time.sleep(1)
+        
+        
+
+        
 
 ## class lidar
 # lidar_thread_funct(controller) 
@@ -91,21 +114,10 @@ def lidar_thread_funct(controller):
             temp_avg[angle_step] = dist_sum / (len(dist_buffer)*5) # average distance by size of dist_buffer
         return temp_avg
     
-    PORT_NAME = '/dev/ttyUSB0'
 
-    ## setup_lidar_connection
-    # trying to connect to lidar
-    def setup_lidar_connection():
-        while(True):
-            try:
-                lidar = RPLidar(None, PORT_NAME, timeout=3)
-                print("Lidar connected.")
-                return lidar
-            except: 
-                print("Error connecting to lidar. Trying again")
-                time.sleep(1)
-            
-    lidar = setup_lidar_connection()
+
+    
+
     try:        
         while(True):
 
