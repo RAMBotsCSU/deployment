@@ -1,4 +1,4 @@
-# **RamBOTs Control System**
+# **RamBOTs**
 
 ## **Overview**
 
