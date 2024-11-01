@@ -2,11 +2,11 @@ import threading
 import time
 import queue
 from controller import MyController
-#from gui import GUI
+from gui import GUI
 from audio import AudioManager
 from serial_comm import SerialComm
 #from lidar import LidarHandler
-#from machine_learning import MachineLearningHandler
+from machine_learning import MachineLearningHandler
 from utilities import kill_program
 
 def main():
@@ -40,18 +40,18 @@ def main():
         return
     
 
-    #gui = GUI(controller)
+    gui = GUI(controller)
     #lidar_handler = LidarHandler(controller, shared_queue)
-    #ml_handler = MachineLearningHandler(controller, ball_queue)
+    ml_handler = MachineLearningHandler(controller, ball_queue)
 
     # Start threads
-    #threading.Thread(target=gui.gui_handler, daemon=True).start()
+    threading.Thread(target=gui.gui_handler, daemon=True).start()
     time.sleep(1)  # Give GUI time to initialize
-    #threading.Thread(target=gui.gui_table_handler, daemon=True).start()
+    threading.Thread(target=gui.gui_table_handler, daemon=True).start()
     threading.Thread(target=controller.listen, daemon=True).start()
     threading.Thread(target=serial_comm.driver_thread_funct, args=(controller,), daemon=True).start()
     #threading.Thread(target=lidar_handler.lidar_thread_funct, daemon=True).start()
-    #threading.Thread(target=ml_handler.ball_thread_funct, daemon=True).start()
+    threading.Thread(target=ml_handler.ball_thread_funct, daemon=True).start()
 
     # Keep the main thread alive
     try:
