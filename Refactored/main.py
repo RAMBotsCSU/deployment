@@ -53,6 +53,10 @@ def main():
     #threading.Thread(target=lidar_handler.lidar_thread_funct, daemon=True).start()
     threading.Thread(target=ml_handler.ball_thread_funct, daemon=True).start()
 
+    lidar_handler = LidarHandler(controller, shared_queue)
+    #threading.Thread(target=lidar_handler.lidar_thread_funct(), daemon=True).start()
+    lidar_handler.lidar_thread_funct()
+    
     # Keep the main thread alive
     try:
         while True:
