@@ -5,7 +5,7 @@ import queue # sharing information between threads
 from pycoral.utils import edgetpu # allows work with TPU's for machine learning
 from adafruit_rplidar import RPLidar
 from math import floor, pi, cos, sin
-import controller
+from utilities import joystick_map_to_range, trigger_map_to_range
 
 class LidarHandler:
 
@@ -232,12 +232,12 @@ class LidarHandler:
                             self.lidar_view = scan_data
                             self.runLidarInference(scan_data, interpreter)
 
-                            joystickArr[0] = controller.joystick_map_to_range(self.controller.l3_horizontal)+1
-                            joystickArr[1] = controller.joystick_map_to_range(self.controller.l3_vertical)+1
-                            joystickArr[2] = controller.trigger_map_to_range(self.controller.triggerL)+1
-                            joystickArr[3] = controller.joystick_map_to_range(self.controller.r3_horizontal)+1
-                            joystickArr[4] = controller.joystick_map_to_range(self.controller.r3_vertical)+1
-                            joystickArr[5] = controller.trigger_map_to_range(self.controller.triggerR)+1
+                            joystickArr[0] = joystick_map_to_range(self.controller.l3_horizontal)+1
+                            joystickArr[1] = joystick_map_to_range(self.controller.l3_vertical)+1
+                            joystickArr[2] = trigger_map_to_range(self.controller.triggerL)+1
+                            joystickArr[3] = joystick_map_to_range(self.controller.r3_horizontal)+1
+                            joystickArr[4] = joystick_map_to_range(self.controller.r3_vertical)+1
+                            joystickArr[5] = trigger_map_to_range(self.controller.triggerR)+1
 
                             lidar_data.append(scan_data + joystickArr)
 
