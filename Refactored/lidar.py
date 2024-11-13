@@ -1,8 +1,11 @@
-import os # acces the operating system
+import sys, os # acces the operating system
 import time # loop delays
 import pygame # lidar map display
 import queue # sharing information between threads
 from pycoral.utils import edgetpu # allows work with TPU's for machine learning
+from adafruit_rplidar import RPLidar
+from math import floor, pi, cos, sin
+import controller
 
 class LidarHandler:
 
@@ -13,11 +16,11 @@ class LidarHandler:
         self.controller = controller
         # self.ready = False
 
-        # # threshholds
-        # self.red_dot_threshold = 700 # 500=.5m (?); threshhold for detecting close object
-        # self.white_dot_threshold = 2000 # furthest distance factored into calculations
-        # self.display_width = 400
-        # self.display_scale = int(self.white_dot_threshold/self.display_width)
+        # threshholds
+        self.red_dot_threshold = 700 # 500=.5m (?); threshhold for detecting close object
+        self.white_dot_threshold = 2000 # furthest distance factored into calculations
+        self.display_width = 400
+        self.display_scale = int(self.white_dot_threshold/self.display_width)
 
         self.lidar_view = []
         self.STOP_FLAG = False
@@ -98,7 +101,7 @@ class LidarHandler:
             time.sleep(1)
 
         
-    def update_lidar_map(self, data):
+    def update_lidar_map(self, data, lcd):
         lcd.fill((0,0,0))
         # Initialize a list to store Lidar data
         for angle in range(360):
@@ -107,22 +110,22 @@ class LidarHandler:
                 radians = angle * pi / 180.0
                 y = -distance * cos(radians)
                 x = distance * sin(radians)
-                point = (int(int(x)/scale_data + map_width/2), int(int(y)/scale_data + map_width/2))
-                if distance <= red_dot_threshold:
+                point = (int(int(x)/self.display_scale + self.display_width/2), int(int(y)/self.display_scale + self.display_width/2))
+                if distance <= self.red_dot_threshold:
                     lcd.set_at(point, pygame.Color(255, 0, 0))
-                elif distance <= white_dot_threshold:
+                elif distance <= self.white_dot_threshold:
                     lcd.set_at(point, pygame.Color(255, 255, 255))
                 # else:
                 #     point = ((-int(white_dot_threshold * sin(radians)), int(white_dot_threshold * cos(radians))))
                 #     lcd.set_at(point, pygame.Color(255, 255, 255))
-        pygame.draw.line(lcd, pygame.Color(255,255,255), (0, map_width/2), (map_width, map_width/2), 1)
-        pygame.draw.line(lcd, pygame.Color(255,255,255), (map_width/2, 0), (map_width/2, map_width), 1)
-        for i in range(-white_dot_threshold + int(white_dot_threshold%500), white_dot_threshold, 500): # tick every .5 meters
-            if i == 0 or i == -white_dot_threshold:
+        pygame.draw.line(lcd, pygame.Color(255,255,255), (0, self.display_width/2), (self.display_width, self.display_width/2), 1)
+        pygame.draw.line(lcd, pygame.Color(255,255,255), (self.display_width/2, 0), (self.display_width/2, self.display_width), 1)
+        for i in range(-self.white_dot_threshold + int(self.white_dot_threshold%500), self.white_dot_threshold, 500): # tick every .5 meters
+            if i == 0 or i == -self.white_dot_threshold:
                 continue
-            tick_placement = int(i/(scale_data*2))+int(map_width/2)
-            pygame.draw.line(lcd, pygame.Color(255, 255, 255), (tick_placement, (map_width/2)+2), (tick_placement, (map_width/2)-2), 1) # x-ticks
-            pygame.draw.line(lcd, pygame.Color(255, 255, 255), ((map_width/2)+2, tick_placement), ((map_width/2)-2, tick_placement), 1) # y-ticks
+            tick_placement = int(i/(self.display_scale*2))+int(self.display_width/2)
+            pygame.draw.line(lcd, pygame.Color(255, 255, 255), (tick_placement, (self.display_width/2)+2), (tick_placement, (self.display_width/2)-2), 1) # x-ticks
+            pygame.draw.line(lcd, pygame.Color(255, 255, 255), ((self.display_width/2)+2, tick_placement), ((self.display_width/2)-2, tick_placement), 1) # y-ticks
             # label = str(i/1000)
             # font = pygame.font.SysFont("Helvetica", 12)
             # text = font.render(label, True, (255, 255, 255))
@@ -132,7 +135,7 @@ class LidarHandler:
 
     # avg_dist is updated to the average data set of all data sets in dist_buffer
     def update_avg_dist(dist_buffer):
-        temp_avg = [white_dot_threshold]*360
+        temp_avg = [self.white_dot_threshold]*360
         for angle_step in range(0, 360, 5):                            # 360 angle values
             dist_sum = 0                                    # temp hold distance sum of each angle
             for i in range(5):
@@ -161,8 +164,8 @@ class LidarHandler:
         # Set up pygame and the display
         os.putenv('SDL_FBDEV', '/dev/fb1')
         pygame.init()
-        map_width = 400 # printed map size
-        lcd = pygame.display.set_mode((map_width, map_width))
+        #map_width = 400 # printed map size
+        lcd = pygame.display.set_mode((self.display_width, self.display_width))
         lcd.fill((0,0,0))
         pygame.display.update()
 
@@ -175,16 +178,16 @@ class LidarHandler:
         output_file = 'lidar_data.csv'
 
         # Define Parameters
-        red_dot_threshold = 700 # 500=.5m (?); threshhold for detecting close object
-        white_dot_threshold = 2000 # furthest distance factored into calculations
+        #red_dot_threshold = 700 # 500=.5m (?); threshhold for detecting close object
+        #white_dot_threshold = 2000 # furthest distance factored into calculations
 
-        print("Lidar setup initialized.\nPrinted Map Range: ", white_dot_threshold/1000,
-               " m\nStop proximity: ", red_dot_threshold/1000, " m")
+        print("Lidar setup initialized.\nPrinted Map Range: ", self.white_dot_threshold/1000,
+               " m\nStop proximity: ", self.red_dot_threshold/1000, " m")
         
         # Scale parameters to map
-        scale_data = int(white_dot_threshold/map_width)
+        # self.display_scale = int(white_dot_threshold/self.display_width)
 
-        scan_data = [white_dot_threshold] * 360
+        scan_data = [self.white_dot_threshold] * 360
         lidar_data = []
 
         joystickArr = [0.000, 0.000, 0.000, 0.000, 0.000, 0.000]
@@ -193,10 +196,10 @@ class LidarHandler:
         starttime = time.time()
         window = 10
         # dist = [white_dot_threshold]*360 # stores lidar distances
-        avg_dist = [white_dot_threshold]*(int(360/5)) # stores moving averages
+        avg_dist = [self.white_dot_threshold]*(int(360/5)) # stores moving averages
         dist_buffer = [[]*360]
 
-        lidar = setup_lidar_connection()
+        lidar = self.setup_lidar_connection()
         
         try:        
             while(True):
@@ -205,7 +208,7 @@ class LidarHandler:
                     for scan in lidar.iter_scans():
                         for (_, angle, distance) in scan:
                             scan_data[min([359, int(angle)])] = distance 
-                        update_lidar_map(scan_data)
+                        self.update_lidar_map(scan_data, lcd)
 
                         if self.controller.running_stop_mode:
                             if (time.time() - starttime) > 0.05: # every .05s
@@ -213,8 +216,8 @@ class LidarHandler:
                                 dist_buffer.append(scan_data) # add new data set to dist_buffer
                                 if len(dist_buffer) > window: # more data sets than window parameter
                                     dist_buffer.pop(0) # remove oldest data set
-                                    avg_dist = update_avg_dist(dist_buffer) # get average of all data sets
-                                    if min(avg_dist) <= red_dot_threshold: # any distance within stop proximity?
+                                    avg_dist = self.update_avg_dist(dist_buffer) # get average of all data sets
+                                    if min(avg_dist) <= self.red_dot_threshold: # any distance within stop proximity?
                                         self.STOP_FLAG = True
                                         print("STOP_FLAG raised.")
                                     else:
@@ -227,14 +230,14 @@ class LidarHandler:
                         if time.time() - start_time > 0.2:
                             start_time = time.time()
                             self.lidar_view = scan_data
-                            runLidarInference(scan_data, interpreter)
+                            self.runLidarInference(scan_data, interpreter)
 
-                            joystickArr[0] = joystick_map_to_range(self.controller.l3_horizontal)+1
-                            joystickArr[1] = joystick_map_to_range(self.controller.l3_vertical)+1
-                            joystickArr[2] = trigger_map_to_range(self.controller.triggerL)+1
-                            joystickArr[3] = joystick_map_to_range(self.controller.r3_horizontal)+1
-                            joystickArr[4] = joystick_map_to_range(self.controller.r3_vertical)+1
-                            joystickArr[5] = trigger_map_to_range(self.controller.triggerR)+1
+                            joystickArr[0] = controller.joystick_map_to_range(self.controller.l3_horizontal)+1
+                            joystickArr[1] = controller.joystick_map_to_range(self.controller.l3_vertical)+1
+                            joystickArr[2] = controller.trigger_map_to_range(self.controller.triggerL)+1
+                            joystickArr[3] = controller.joystick_map_to_range(self.controller.r3_horizontal)+1
+                            joystickArr[4] = controller.joystick_map_to_range(self.controller.r3_vertical)+1
+                            joystickArr[5] = controller.trigger_map_to_range(self.controller.triggerR)+1
 
                             lidar_data.append(scan_data + joystickArr)
 
@@ -249,7 +252,7 @@ class LidarHandler:
                     lidar.stop()
                     lidar.disconnect()
                     print("Lidar stopped.")
-                    lidar = setup_lidar_connection()
+                    lidar = self.setup_lidar_connection()
 
         except KeyboardInterrupt:
             print("Program Ended")
