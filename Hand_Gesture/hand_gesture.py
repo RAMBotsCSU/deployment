@@ -58,7 +58,7 @@ def display_results(frame, classes, labels, position=(10, 30)):
     return frame
 
 def run_hand_gesture():
-    MODEL_FILE = "hand_command.tflite"
+    MODEL_FILE = "hand_command_edgetpu.tflite"
     LABELS_FILE = "labels.txt"
 
     # Load model and labels
