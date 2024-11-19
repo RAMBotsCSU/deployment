@@ -45,16 +45,23 @@ def preprocess_frame(frame, input_shape, input_details):
     return input_tensor
 
 def run_inference(interpreter, input_tensor):
+    """
+    Run inference on the given input tensor using the TensorFlow Lite model.
+    """
+    # Step 1: Retrieve input tensor details
     input_details = interpreter.get_input_details()
+    print("Input Details:", input_details)
     interpreter.set_tensor(input_details[0]['index'], input_tensor)
     interpreter.invoke()
-    
-    # Logging raw model outputs for debugging
+
     output_details = interpreter.get_output_details()
+    print("Output Details:", output_details)
+
     output_data = interpreter.get_tensor(output_details[0]['index'])
     print("Raw model output:", output_data)
-    
-    return get_classes(interpreter, top_k=1)
+
+    classes = get_classes(interpreter, top_k=1)
+    return classes
 
 def display_results(frame, classes, labels, position=(10, 30)):
     """Display the inference results on the frame."""
