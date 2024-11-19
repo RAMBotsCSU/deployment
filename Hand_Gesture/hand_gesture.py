@@ -1,11 +1,17 @@
+import re
 import cv2
 import numpy as np
+import time
+from pycoral.utils import edgetpu
+from pycoral.utils import dataset
+from pycoral.adapters import common
+from pycoral.adapters import classify
 from pycoral.adapters.common import input_size
 from pycoral.adapters.classify import get_classes
 from pycoral.utils.edgetpu import make_interpreter
 
 def load_model(model_path):
-    interpreter = make_interpreter(model_path)
+    interpreter = edgetpu.make_interpreter(model_path, device = 'usb')
     interpreter.allocate_tensors()
     return interpreter
 
@@ -40,7 +46,7 @@ def display_results(frame, classes, labels, position=(10, 30)):
     return frame
 
 def run_hand_gesture():
-    MODEL_FILE = "hand_gesture_model_edgetpu.tflite"
+    MODEL_FILE = "hand_command.tflite"
     LABELS_FILE = "labels.txt"
 
     # Load model and labels
