@@ -66,6 +66,7 @@ def run_hand_gesture():
     print("Model loaded")
     labels = load_labels(LABELS_FILE) if LABELS_FILE else {}
     print("Labels loaded")
+    print(labels)
     input_shape = input_size(interpreter)
     input_details = interpreter.get_input_details()
 
