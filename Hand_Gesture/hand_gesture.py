@@ -45,11 +45,14 @@ def run_hand_gesture():
 
     # Load model and labels
     interpreter = load_model(MODEL_FILE)
+    print("model loaded")
     labels = load_labels(LABELS_FILE) if LABELS_FILE else {}
+    print("labels loaded")
     input_shape = input_size(interpreter)
 
     # Set up the camera
     cap = setup_camera()
+    print("Camera setup correctly")
 
     print("Press 'q' to quit.")
     try:
