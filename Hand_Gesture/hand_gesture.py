@@ -1,35 +1,44 @@
-import re
 import cv2
 import numpy as np
-import time
+import logging
 from pycoral.utils import edgetpu
-from pycoral.utils import dataset
-from pycoral.adapters import common
-from pycoral.adapters import classify
-from pycoral.adapters.common import input_size
-from pycoral.adapters.classify import get_classes
-from pycoral.utils.edgetpu import make_interpreter
+from pycoral.adapters import common, classify
 
-def load_model(model_path):
-    interpreter = edgetpu.make_interpreter(model_path, device='usb')
-    interpreter.allocate_tensors()
-    return interpreter
 
-def load_labels(labels_path):
-    with open(labels_path, 'r') as f:
-        return {int(line.split()[0]): line.strip().split(maxsplit=1)[1] for line in f.readlines()}
+def load_model(model_path: str):
+    """Load the TFLite model with Edge TPU support."""
+    try:
+        interpreter = edgetpu.make_interpreter(model_path)
+        interpreter.allocate_tensors()
+        logging.info("Model loaded successfully.")
+        return interpreter
+    except Exception as e:
+        logging.error(f"Failed to load model: {e}")
+        raise
 
-def setup_camera(camera_index=0, width=320, height=480):
+
+def load_labels(labels_path: str) -> dict:
+    """Load labels from a text file."""
+    try:
+        with open(labels_path, 'r') as f:
+            return {int(line.split()[0]): line.strip().split(maxsplit=1)[1] for line in f.readlines()}
+    except Exception as e:
+        logging.error(f"Failed to load labels: {e}")
+        raise
+
+
+def setup_camera(camera_index: int = 0, width: int = 640, height: int = 480):
+    """Initialize and configure the camera."""
     cap = cv2.VideoCapture(camera_index)
     if not cap.isOpened():
         raise ValueError("Error: Camera not found or could not be opened.")
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
     cap.set(cv2.CAP_PROP_FPS, 30)
-
     return cap
 
-def preprocess_frame(frame, input_shape, input_details):
+
+def preprocess_frame(frame: np.ndarray, input_shape: tuple, input_details: list) -> np.ndarray:
     """Preprocess the frame for UINT8 model input."""
     # Resize and convert to RGB
     resized_frame = cv2.resize(frame, input_shape)
@@ -44,26 +53,21 @@ def preprocess_frame(frame, input_shape, input_details):
     input_tensor = np.expand_dims(resized_frame, axis=0)
     return input_tensor
 
-def run_inference(interpreter, input_tensor):
-    """
-    Run inference on the given input tensor using the TensorFlow Lite model.
-    """
-    # Step 1: Retrieve input tensor details
+
+def run_inference(interpreter, input_tensor: np.ndarray):
+    """Run inference on the given input tensor."""
     input_details = interpreter.get_input_details()
-    print("Input Details:", input_details)
     interpreter.set_tensor(input_details[0]['index'], input_tensor)
     interpreter.invoke()
 
     output_details = interpreter.get_output_details()
-    print("Output Details:", output_details)
-
     output_data = interpreter.get_tensor(output_details[0]['index'])
-    print("Raw model output:", output_data)
+    logging.debug(f"Raw model output: {output_data}")
 
-    classes = get_classes(interpreter, top_k=1)
-    return classes
+    return classify.get_classes(interpreter, top_k=1)
 
-def display_results(frame, classes, labels, position=(10, 30)):
+
+def display_results(frame: np.ndarray, classes: list, labels: dict, position: tuple = (10, 30)) -> np.ndarray:
     """Display the inference results on the frame."""
     for c in classes:
         label = labels.get(c.id, f"Class {c.id}")
@@ -71,29 +75,29 @@ def display_results(frame, classes, labels, position=(10, 30)):
         cv2.putText(frame, f"{label}: {score:.2f}", position, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
     return frame
 
+
 def run_hand_gesture():
-    MODEL_FILE = "hand_command_edgetpu.tflite"
+    """Main function to run hand gesture recognition."""
+    logging.basicConfig(level=logging.INFO)
+
+    MODEL_FILE = "hand_command_uint8.tflite"
     LABELS_FILE = "labels.txt"
 
     # Load model and labels
     interpreter = load_model(MODEL_FILE)
-    print("Model loaded")
     labels = load_labels(LABELS_FILE) if LABELS_FILE else {}
-    print("Labels loaded")
-    print(labels)
-    input_shape = input_size(interpreter)
+    input_shape = common.input_size(interpreter)
     input_details = interpreter.get_input_details()
 
     # Set up the camera
     cap = setup_camera()
-    print("Camera setup correctly")
+    logging.info("Camera setup complete. Press 'q' to quit.")
 
-    print("Press 'q' to quit.")
     try:
         while True:
             ret, frame = cap.read()
             if not ret:
-                print("Error: Unable to read from the camera.")
+                logging.error("Error: Unable to read from the camera.")
                 break
 
             # Preprocess the frame, run inference, and display results
@@ -111,5 +115,7 @@ def run_hand_gesture():
         cap.release()
         cv2.destroyAllWindows()
 
+
 if __name__ == "__main__":
     run_hand_gesture()
+
