@@ -3,6 +3,7 @@ import numpy as np
 import logging
 from pycoral.utils import edgetpu
 from pycoral.adapters import common, classify
+import time
 
 
 def load_model(model_path: str):
@@ -64,7 +65,7 @@ def run_inference(interpreter, input_tensor: np.ndarray):
     output_data = interpreter.get_tensor(output_details[0]['index'])
     logging.debug(f"Raw model output: {output_data}")
 
-    return classify.get_classes(interpreter, top_k=1)
+    return classify.get_classes(interpreter, top_k=1, score_threshold=0.5)
 
 
 def display_results(frame: np.ndarray, classes: list, labels: dict, position: tuple = (10, 30)) -> np.ndarray:
@@ -95,6 +96,8 @@ def run_hand_gesture():
 
     try:
         while True:
+            start_time = time.time()
+
             ret, frame = cap.read()
             if not ret:
                 logging.error("Error: Unable to read from the camera.")
@@ -107,6 +110,10 @@ def run_hand_gesture():
 
             # Show frame
             cv2.imshow("Hand Gesture Recognition", frame)
+
+            # Calculate and display FPS
+            fps = 1.0 / (time.time() - start_time)
+            cv2.putText(frame, f"FPS: {fps:.2f}", (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
 
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
