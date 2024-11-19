@@ -25,6 +25,8 @@ def setup_camera(camera_index=0, width=320, height=480):
         raise ValueError("Error: Camera not found or could not be opened.")
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
+    cap.set(cv2.CAP_PROP_FPS, 30)
+
     return cap
 
 def preprocess_frame(frame, input_shape, input_details):
@@ -43,10 +45,15 @@ def preprocess_frame(frame, input_shape, input_details):
     return input_tensor
 
 def run_inference(interpreter, input_tensor):
-    """Run inference on the preprocessed tensor."""
     input_details = interpreter.get_input_details()
     interpreter.set_tensor(input_details[0]['index'], input_tensor)
     interpreter.invoke()
+    
+    # Logging raw model outputs for debugging
+    output_details = interpreter.get_output_details()
+    output_data = interpreter.get_tensor(output_details[0]['index'])
+    print("Raw model output:", output_data)
+    
     return get_classes(interpreter, top_k=1)
 
 def display_results(frame, classes, labels, position=(10, 30)):
