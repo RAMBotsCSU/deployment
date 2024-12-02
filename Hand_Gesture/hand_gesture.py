@@ -51,6 +51,10 @@ def preprocess_frame(frame, input_shape, input_details):
 
     # Expand dimensions for batch input
     input_tensor = np.expand_dims(resized_frame, axis=0)
+
+    logging.debug(f"Frame variance: {np.var(frame)}")  # Variance of the original frame
+    logging.debug(f"Input tensor variance: {np.var(input_tensor)}")  # Variance of the input tensor
+
     return input_tensor
 
 def run_inference(interpreter, input_tensor):
@@ -64,7 +68,7 @@ def run_inference(interpreter, input_tensor):
     logging.debug(f"Raw model output: {output_data}")
 
     
-    classes = classify.get_classes(interpreter, top_k=1, score_threshold=0.5)
+    classes = classify.get_classes(interpreter, top_k=1, score_threshold=0.0)
     
     # Log or print the classes
     if classes:
@@ -111,6 +115,9 @@ def run_hand_gesture():
             if not ret:
                 logging.error("Error: Unable to read from the camera.")
                 break
+            # Inside the loop before preprocessing the frame
+            logging.debug(f"Frame index: {int(time.time() * 1000)}")  # Log current time as a pseudo frame index
+            cv2.imshow("Debug Input Frame", frame)  # Display the current frame for visual confirmation
 
             # Preprocess the frame, run inference, and display results
             input_tensor = preprocess_frame(frame, input_shape, input_details)
@@ -126,6 +133,9 @@ def run_hand_gesture():
             cv2.imshow("Hand Gesture Recognition", frame)
 
             # Calculate and display FPS
+            fps = 1.0 / (time.time() - start_time)
+            cv2.putText(frame, f"FPS: {fps:.2f}", (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+
             fps = 1.0 / (time.time() - start_time)
             cv2.putText(frame, f"FPS: {fps:.2f}", (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
 
