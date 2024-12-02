@@ -30,7 +30,7 @@ def setup_camera(camera_index=0, width=320, height=480):
     return cap
 
 def preprocess_frame(frame, input_shape, input_details):
-    """Preprocess the frame for UINT8 model input."""
+    
     # Resize and convert to RGB
     resized_frame = cv2.resize(frame, input_shape)
     resized_frame = cv2.cvtColor(resized_frame, cv2.COLOR_BGR2RGB)
@@ -45,10 +45,7 @@ def preprocess_frame(frame, input_shape, input_details):
     return input_tensor
 
 def run_inference(interpreter, input_tensor):
-    """
-    Run inference on the given input tensor using the TensorFlow Lite model.
-    """
-    # Step 1: Retrieve input tensor details
+    
     input_details = interpreter.get_input_details()
     print("Input Details:", input_details)
     interpreter.set_tensor(input_details[0]['index'], input_tensor)
