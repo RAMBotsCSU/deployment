@@ -30,7 +30,7 @@ def load_labels(labels_path: str) -> dict:
         raise
 
 
-def setup_camera(camera_index: int = 0, width: int = 320, height: int = 240):
+def setup_camera(camera_index: int = 0, width: int = 224, height: int = 224):
     """Initialize and configure the camera."""
     cap = cv2.VideoCapture(camera_index)
     if not cap.isOpened():
@@ -101,7 +101,7 @@ def run_hand_gesture():
     logging.info("Camera setup complete. Press 'q' to quit.")
 
     frame_counter = 0
-    n = 2  # Run inference every 2 frames to improve performance
+    n = 1  # Run inference on every frame
     executor = ThreadPoolExecutor(max_workers=2)
 
     def process_frame(frame):
@@ -116,11 +116,6 @@ def run_hand_gesture():
             if not ret:
                 logging.error("Error: Unable to read from the camera.")
                 break
-
-            frame_counter += 1
-            if frame_counter % n != 0:
-                # Skip frame to improve performance
-                continue
 
             # Run inference asynchronously
             future = executor.submit(process_frame, frame)
