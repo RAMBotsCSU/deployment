@@ -79,7 +79,7 @@ def run_hand_gesture():
     """Main function to run hand gesture recognition."""
     logging.basicConfig(level=logging.INFO)
 
-    MODEL_FILE = "hand_command_uint8.tflite"
+    MODEL_FILE = "hand_command_uint8_v2.tflite"
     LABELS_FILE = "labels.txt"
 
     # Load model and labels
