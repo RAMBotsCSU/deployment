@@ -117,7 +117,7 @@ def run_hand_gesture():
             classes = run_inference(interpreter, input_tensor)
             if classes:
                 for c in classes:
-                print(f"Detected: {labels.get(c.id, 'Unknown')} with confidence {c.score:.2f}")
+                    print(f"Detected: {labels.get(c.id, 'Unknown')} with confidence {c.score:.2f}")
             else:
                 print("No confident predictions.")
             frame = display_results(frame, classes, labels)
