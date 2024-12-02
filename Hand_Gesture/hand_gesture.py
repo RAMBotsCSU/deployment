@@ -63,7 +63,17 @@ def run_inference(interpreter, input_tensor):
     output_data = interpreter.get_tensor(output_details[0]['index'])
     logging.debug(f"Raw model output: {output_data}")
 
-    return classify.get_classes(interpreter, top_k=1, score_threshold=0.5)
+    
+    classes = classify.get_classes(interpreter, top_k=1, score_threshold=0.5)
+    
+    # Log or print the classes
+    if classes:
+        for c in classes:
+            logging.info(f"Predicted Class ID: {c.id}, Score: {c.score:.2f}")
+    else:
+        logging.info("No predictions above the score threshold.")
+    
+    return classes
 
 
 def display_results(frame: np.ndarray, classes: list, labels: dict, position: tuple = (10, 30)) -> np.ndarray:
@@ -84,6 +94,7 @@ def run_hand_gesture():
 
     # Load model and labels
     interpreter = load_model(MODEL_FILE)
+    print("model loaded succesfully")
     labels = load_labels(LABELS_FILE) if LABELS_FILE else {}
     input_shape = common.input_size(interpreter)
     input_details = interpreter.get_input_details()
@@ -104,6 +115,11 @@ def run_hand_gesture():
             # Preprocess the frame, run inference, and display results
             input_tensor = preprocess_frame(frame, input_shape, input_details)
             classes = run_inference(interpreter, input_tensor)
+            if classes:
+                for c in classes:
+                print(f"Detected: {labels.get(c.id, 'Unknown')} with confidence {c.score:.2f}")
+            else:
+                print("No confident predictions.")
             frame = display_results(frame, classes, labels)
 
             # Show frame
