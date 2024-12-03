@@ -101,7 +101,7 @@ def run_hand_gesture():
     logging.info("Camera setup complete. Press 'q' to quit.")
 
     frame_counter = 0
-    n = 2  # Run inference every 2 frames to balance performance
+    n = 1  # Run inference on every frame
     executor = ThreadPoolExecutor(max_workers=2)
 
     def process_frame(frame):
@@ -117,16 +117,6 @@ def run_hand_gesture():
                 logging.error("Error: Unable to read from the camera.")
                 break
 
-            frame_counter += 1
-            if frame_counter % n != 0:
-                # Skip frame to improve performance
-                fps = 1.0 / (time.time() - start_time)
-                cv2.putText(frame, f"FPS: {fps:.2f}", (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
-                cv2.imshow("Hand Gesture Recognition", frame)
-                if cv2.waitKey(1) & 0xFF == ord('q'):
-                    break
-                continue
-
             # Run inference asynchronously
             future = executor.submit(process_frame, frame)
             classes = future.result()
@@ -137,7 +127,8 @@ def run_hand_gesture():
             else:
                 print("No confident predictions.")
 
-            fps = 1.0 / (time.time() - start_time)
+            end_time = time.time()
+            fps = 1.0 / (end_time - start_time)
             frame = display_results(frame, classes, labels, fps)
 
             # Show frame
@@ -153,5 +144,4 @@ def run_hand_gesture():
 
 if __name__ == "__main__":
     run_hand_gesture()
-
 
