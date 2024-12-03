@@ -30,14 +30,14 @@ def load_labels(labels_path: str) -> dict:
         raise
 
 
-def setup_camera(camera_index: int = 0, width: int = 160, height: int = 160):
+def setup_camera(camera_index: int = 0, width: int = 224, height: int = 224):
     """Initialize and configure the camera."""
     cap = cv2.VideoCapture(camera_index)
     if not cap.isOpened():
         raise ValueError("Error: Camera not found or could not be opened.")
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
-    cap.set(cv2.CAP_PROP_FPS, 30)
+    cap.set(cv2.CAP_PROP_FPS, 15)
     return cap
 
 
@@ -59,7 +59,7 @@ def preprocess_frame(frame, input_shape, input_details):
     return input_tensor
 
 
-def run_inference(interpreter, input_tensor, score_threshold=0.85):
+def run_inference(interpreter, input_tensor, score_threshold=0.6):
     """Run inference on the input tensor."""
     input_details = interpreter.get_input_details()
     interpreter.set_tensor(input_details[0]['index'], input_tensor)
@@ -101,12 +101,12 @@ def run_hand_gesture():
     logging.info("Camera setup complete. Press 'q' to quit.")
 
     frame_counter = 0
-    n = 5  # Run inference every 5 frames to improve performance
+    n = 2  # Run inference every 2 frames to balance performance
     executor = ThreadPoolExecutor(max_workers=2)
 
     def process_frame(frame):
         input_tensor = preprocess_frame(frame, input_shape, input_details)
-        return run_inference(interpreter, input_tensor, score_threshold=0.85)
+        return run_inference(interpreter, input_tensor, score_threshold=0.6)
 
     try:
         while True:
@@ -153,4 +153,5 @@ def run_hand_gesture():
 
 if __name__ == "__main__":
     run_hand_gesture()
+
 
