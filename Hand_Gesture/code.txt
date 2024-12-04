@@ -5,6 +5,7 @@ from pycoral.utils import edgetpu
 from pycoral.adapters import common, classify
 import time
 import threading
+from concurrent.futures import ThreadPoolExecutor
 
 
 def load_model(model_path: str):
@@ -58,7 +59,7 @@ def preprocess_frame(frame, input_shape, input_details):
     return input_tensor
 
 
-def run_inference(interpreter, input_tensor, score_threshold=0.1):
+def run_inference(interpreter, input_tensor, score_threshold=0.05):
     """Run inference on the input tensor."""
     input_details = interpreter.get_input_details()
     interpreter.set_tensor(input_details[0]['index'], input_tensor)
@@ -101,6 +102,11 @@ def run_hand_gesture():
 
     frame_counter = 0
     n = 2  # Run inference every 2 frames to improve performance
+    executor = ThreadPoolExecutor(max_workers=2)
+
+    def process_frame(frame):
+        input_tensor = preprocess_frame(frame, input_shape, input_details)
+        return run_inference(interpreter, input_tensor, score_threshold=0.05)
 
     try:
         while True:
@@ -116,9 +122,9 @@ def run_hand_gesture():
                 # Skip frame to improve performance
                 continue
 
-            # Preprocess the frame, run inference, and display results
-            input_tensor = preprocess_frame(frame, input_shape, input_details)
-            classes = run_inference(interpreter, input_tensor, score_threshold=0.1)
+            # Run inference asynchronously
+            future = executor.submit(process_frame, frame)
+            classes = future.result()
 
             if classes:
                 for c in classes:
