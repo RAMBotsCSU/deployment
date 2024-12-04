@@ -9,18 +9,23 @@ from concurrent.futures import ThreadPoolExecutor
 
 
 class HandGesture(Enum):
-    FIST = ("Fist", "Push down")
-    ONE = ("One", "Walk forward")
-    PALM = ("Palm", "Push up")
-    PEACE_INVERTED = ("Peace Inverted", "Dance")
-    STOP = ("Stop", "Stop walking")
+    FIST = (0, "Fist", "Push down")
+    ONE = (1, "One", "Walk forward")
+    PALM = (2, "Palm", "Push up")
+    PEACE_INVERTED = (3, "Peace Inverted", "Dance")
+    STOP = (4, "Stop", "Stop walking")
 
-    def __init__(self, gesture_name, action):
+    def __init__(self, gesture_id, gesture_name, action):
+        self.gesture_id = gesture_id
         self.gesture_name = gesture_name
         self.action = action
 
-    def describe(self):
-        return f"{self.gesture_name}: {self.action}"
+    @staticmethod
+    def get_gesture_by_id(gesture_id):
+        for gesture in HandGesture:
+            if gesture.gesture_id == gesture_id:
+                return gesture
+        return None
 
 
 def load_model(model_path: str):
@@ -94,10 +99,10 @@ def display_results(frame: np.ndarray, classes: list, labels: dict, fps: float, 
     for c in classes:
         label = labels.get(c.id, f"Class {c.id}")
         score = c.score
-        try:
-            gesture = HandGesture[c.id]
+        gesture = HandGesture.get_gesture_by_id(c.id)
+        if gesture:
             text = f"{gesture.gesture_name}: {gesture.action} ({score:.2f})"
-        except KeyError:
+        else:
             text = f"{label}: {score:.2f}"
 
         # Display the gesture information on the frame
@@ -147,10 +152,10 @@ def run_hand_gesture():
 
             if classes:
                 for c in classes:
-                    try:
-                        gesture = HandGesture[c.id]
+                    gesture = HandGesture.get_gesture_by_id(c.id)
+                    if gesture:
                         print(f"Detected: {gesture.gesture_name} - {gesture.action} with confidence {c.score:.2f}")
-                    except KeyError:
+                    else:
                         print(f"Detected: {labels.get(c.id, 'Unknown')} with confidence {c.score:.2f}")
             else:
                 print("No confident predictions.")
