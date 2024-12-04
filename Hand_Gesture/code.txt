@@ -64,32 +64,30 @@ def setup_camera(camera_index: int = 0, width: int = 224, height: int = 224):
 
 def preprocess_frame(frame, input_shape):
     """Preprocess the frame to match the model's expected input (float32)."""
-    start_time = time.time()
     resized_frame = cv2.resize(frame, input_shape)
     resized_frame = cv2.cvtColor(resized_frame, cv2.COLOR_BGR2RGB)
     resized_frame = resized_frame.astype(np.float32) / 255.0  # Normalize to [0, 1]
     input_tensor = np.expand_dims(resized_frame, axis=0)
-    logging.debug(f"Preprocessing time: {time.time() - start_time:.4f} seconds")
     return input_tensor
 
 
 def run_inference(interpreter, input_tensor):
     """Run inference on the input tensor."""
-    start_time = time.time()
     input_details = interpreter.get_input_details()
     interpreter.set_tensor(input_details[0]['index'], input_tensor)
-    interpreter.invoke()
+    
+    start_time = time.time()
+    interpreter.invoke()  # Run inference
     inference_time = time.time() - start_time
+    
+    logging.info(f"Inference time: {inference_time:.4f} seconds")
 
     output_details = interpreter.get_output_details()
-    classes = classify.get_classes(interpreter, top_k=1)
-    logging.debug(f"Inference time: {inference_time:.4f} seconds")
-    return classes
+    return classify.get_classes(interpreter, top_k=1)
 
 
 def display_results(frame, classes, labels, fps, position=(10, 30)):
     """Display the inference results on the frame."""
-    start_time = time.time()
     y_offset = position[1]
     for c in classes:
         label = labels.get(c.id, f"Class {c.id}")
@@ -106,15 +104,14 @@ def display_results(frame, classes, labels, fps, position=(10, 30)):
 
     # Display FPS
     cv2.putText(frame, f"FPS: {fps:.2f}", (10, y_offset), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)
-    logging.debug(f"Display time: {time.time() - start_time:.4f} seconds")
     return frame
 
 
 def run_hand_gesture():
     """Main function to run hand gesture recognition."""
-    logging.basicConfig(level=logging.DEBUG)
+    logging.basicConfig(level=logging.INFO)
 
-    MODEL_FILE = "hand_command_v2.tflite"
+    MODEL_FILE = "hand_command_v2_edgetpu.tflite"
     LABELS_FILE = "labels.txt"
 
     # Load model and labels
@@ -126,19 +123,19 @@ def run_hand_gesture():
     cap = setup_camera()
     logging.info("Camera setup complete. Press 'q' to quit.")
 
-    frame_queue = Queue(maxsize=2)
-    result_queue = Queue(maxsize=2)
+    frame_queue = Queue(maxsize=1)
+    result_queue = Queue(maxsize=1)
+    last_classes = []  # Store the last inference result
+    fps = 0
 
     def capture_frames():
         """Capture frames from the camera."""
         while True:
-            start_time = time.time()
             ret, frame = cap.read()
             if not ret:
                 break
             if not frame_queue.full():
                 frame_queue.put(frame)
-            logging.debug(f"Capture time: {time.time() - start_time:.4f} seconds")
 
     def process_frames():
         """Process frames for inference."""
@@ -147,7 +144,8 @@ def run_hand_gesture():
                 frame = frame_queue.get()
                 input_tensor = preprocess_frame(frame, input_shape)
                 classes = run_inference(interpreter, input_tensor)
-                result_queue.put((frame, classes))
+                if not result_queue.full():
+                    result_queue.put((frame, classes))
 
     # Start threads
     capture_thread = Thread(target=capture_frames, daemon=True)
@@ -159,13 +157,20 @@ def run_hand_gesture():
         while True:
             loop_start_time = time.time()
 
+            # Display the most recent inference result
             if not result_queue.empty():
-                frame, classes = result_queue.get()
-                fps = 1.0 / (time.time() - loop_start_time)
-                frame = display_results(frame, classes, labels, fps)
+                frame, last_classes = result_queue.get()
 
-                # Show frame
-                cv2.imshow("Hand Gesture Recognition", frame)
+            # Display the latest frame with the last known inference result
+            if not frame_queue.empty():
+                frame = frame_queue.queue[0]  # Show the latest frame from the queue
+            frame = display_results(frame, last_classes, labels, fps)
+
+            # Calculate FPS
+            fps = 1.0 / (time.time() - loop_start_time)
+
+            # Show frame
+            cv2.imshow("Hand Gesture Recognition", frame)
 
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
@@ -177,3 +182,4 @@ def run_hand_gesture():
 
 if __name__ == "__main__":
     run_hand_gesture()
+
