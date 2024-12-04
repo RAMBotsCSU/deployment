@@ -94,15 +94,17 @@ def display_results(frame: np.ndarray, classes: list, labels: dict, fps: float, 
     for c in classes:
         label = labels.get(c.id, f"Class {c.id}")
         score = c.score
-        if c.id in HandGesture._member_names_:
+        try:
             gesture = HandGesture[c.id]
-            text = f"{gesture.gesture_name} ({gesture.action}): {score:.2f}"
-        else:
+            text = f"{gesture.gesture_name}: {gesture.action} ({score:.2f})"
+        except KeyError:
             text = f"{label}: {score:.2f}"
-        
+
+        # Display the gesture information on the frame
         cv2.putText(frame, text, (position[0], y_offset), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)
         y_offset += 30  # Move text down for the next line
-    
+
+    # Display FPS
     cv2.putText(frame, f"FPS: {fps:.2f}", (10, y_offset), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)
     return frame
 
@@ -124,7 +126,6 @@ def run_hand_gesture():
     cap = setup_camera()
     logging.info("Camera setup complete. Press 'q' to quit.")
 
-    frame_counter = 0
     executor = ThreadPoolExecutor(max_workers=2)
 
     def process_frame(frame):
@@ -146,10 +147,10 @@ def run_hand_gesture():
 
             if classes:
                 for c in classes:
-                    if c.id in HandGesture._member_names_:
+                    try:
                         gesture = HandGesture[c.id]
                         print(f"Detected: {gesture.gesture_name} - {gesture.action} with confidence {c.score:.2f}")
-                    else:
+                    except KeyError:
                         print(f"Detected: {labels.get(c.id, 'Unknown')} with confidence {c.score:.2f}")
             else:
                 print("No confident predictions.")
