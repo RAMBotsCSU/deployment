@@ -4,8 +4,23 @@ import logging
 from pycoral.utils import edgetpu
 from pycoral.adapters import common, classify
 import time
-import threading
+from enum import Enum
 from concurrent.futures import ThreadPoolExecutor
+
+
+class HandGesture(Enum):
+    FIST = ("Fist", "Push down")
+    ONE = ("One", "Walk forward")
+    PALM = ("Palm", "Push up")
+    PEACE_INVERTED = ("Peace Inverted", "Dance")
+    STOP = ("Stop", "Stop walking")
+
+    def __init__(self, gesture_name, action):
+        self.gesture_name = gesture_name
+        self.action = action
+
+    def describe(self):
+        return f"{self.gesture_name}: {self.action}"
 
 
 def load_model(model_path: str):
@@ -75,11 +90,20 @@ def run_inference(interpreter, input_tensor, score_threshold=0.6):
 
 def display_results(frame: np.ndarray, classes: list, labels: dict, fps: float, position: tuple = (10, 30)) -> np.ndarray:
     """Display the inference results on the frame."""
+    y_offset = position[1]
     for c in classes:
         label = labels.get(c.id, f"Class {c.id}")
         score = c.score
-        cv2.putText(frame, f"{label}: {score:.2f}", position, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
-    cv2.putText(frame, f"FPS: {fps:.2f}", (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+        if c.id in HandGesture._member_names_:
+            gesture = HandGesture[c.id]
+            text = f"{gesture.gesture_name} ({gesture.action}): {score:.2f}"
+        else:
+            text = f"{label}: {score:.2f}"
+        
+        cv2.putText(frame, text, (position[0], y_offset), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)
+        y_offset += 30  # Move text down for the next line
+    
+    cv2.putText(frame, f"FPS: {fps:.2f}", (10, y_offset), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)
     return frame
 
 
@@ -101,7 +125,6 @@ def run_hand_gesture():
     logging.info("Camera setup complete. Press 'q' to quit.")
 
     frame_counter = 0
-    n = 1  # Run inference on every frame
     executor = ThreadPoolExecutor(max_workers=2)
 
     def process_frame(frame):
@@ -123,7 +146,11 @@ def run_hand_gesture():
 
             if classes:
                 for c in classes:
-                    print(f"Detected: {labels.get(c.id, 'Unknown')} with confidence {c.score:.2f}")
+                    if c.id in HandGesture._member_names_:
+                        gesture = HandGesture[c.id]
+                        print(f"Detected: {gesture.gesture_name} - {gesture.action} with confidence {c.score:.2f}")
+                    else:
+                        print(f"Detected: {labels.get(c.id, 'Unknown')} with confidence {c.score:.2f}")
             else:
                 print("No confident predictions.")
 
@@ -144,4 +171,3 @@ def run_hand_gesture():
 
 if __name__ == "__main__":
     run_hand_gesture()
-
