@@ -5,8 +5,7 @@ from pycoral.utils import edgetpu
 from pycoral.adapters import common, classify
 import time
 from enum import Enum
-from concurrent.futures import ThreadPoolExecutor, as_completed
-from threading import Thread
+from concurrent.futures import ThreadPoolExecutor
 
 
 class HandGesture(Enum):
@@ -132,12 +131,9 @@ def run_hand_gesture():
     cap = setup_camera()
     logging.info("Camera setup complete. Press 'q' to quit.")
 
-    frame_buffer = []
     executor = ThreadPoolExecutor(max_workers=2)
-    fps = 0
 
     def process_frame(frame):
-        """Threaded function to preprocess, run inference, and return results."""
         input_tensor = preprocess_frame(frame, input_shape, input_details)
         return run_inference(interpreter, input_tensor, score_threshold=0.6)
 
@@ -150,24 +146,26 @@ def run_hand_gesture():
                 logging.error("Error: Unable to read from the camera.")
                 break
 
-            # Submit frame for processing asynchronously
+            # Run inference asynchronously
             future = executor.submit(process_frame, frame)
-
-            # Process previous results
-            if frame_buffer:
-                processed_frame, classes = frame_buffer.pop(0)
-                frame = display_results(processed_frame, classes, labels, fps)
-
-                # Show frame
-                cv2.imshow("Hand Gesture Recognition", frame)
-
-            # Collect results of the current frame
             classes = future.result()
-            frame_buffer.append((frame.copy(), classes))
 
-            # Calculate FPS
+            if classes:
+                for c in classes:
+                    gesture = HandGesture.get_gesture_by_id(c.id)
+                    if gesture:
+                        print(f"Detected: {gesture.gesture_name} - {gesture.action} with confidence {c.score:.2f}")
+                    else:
+                        print(f"Detected: {labels.get(c.id, 'Unknown')} with confidence {c.score:.2f}")
+            else:
+                print("No confident predictions.")
+
             end_time = time.time()
             fps = 1.0 / (end_time - start_time)
+            frame = display_results(frame, classes, labels, fps)
+
+            # Show frame
+            cv2.imshow("Hand Gesture Recognition", frame)
 
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
