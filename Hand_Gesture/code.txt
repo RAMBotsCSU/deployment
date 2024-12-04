@@ -154,23 +154,23 @@ def run_hand_gesture():
     process_thread.start()
 
     try:
+        frame = None  # Initialize frame to ensure it's always defined
         while True:
             loop_start_time = time.time()
 
-            # Display the most recent inference result
+            # Retrieve the latest inference result
             if not result_queue.empty():
                 frame, last_classes = result_queue.get()
 
-            # Display the latest frame with the last known inference result
-            if not frame_queue.empty():
-                frame = frame_queue.queue[0]  # Show the latest frame from the queue
-            frame = display_results(frame, last_classes, labels, fps)
+            # Use the last known frame if available
+            if frame is not None:
+                frame = display_results(frame, last_classes, labels, fps)
 
             # Calculate FPS
             fps = 1.0 / (time.time() - loop_start_time)
 
             # Show frame
-            cv2.imshow("Hand Gesture Recognition", frame)
+            cv2.imshow("Hand Gesture Recognition", frame if frame is not None else np.zeros((224, 224, 3), dtype=np.uint8))
 
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
@@ -182,4 +182,3 @@ def run_hand_gesture():
 
 if __name__ == "__main__":
     run_hand_gesture()
-
