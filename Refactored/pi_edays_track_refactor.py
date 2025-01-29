@@ -1,0 +1,488 @@
+
+lidar_view = []
+
+## class gui
+sg.theme('DarkGreen2')
+
+## class gui
+# used in tab1_layout, update_table_cell, gui_table_handler
+table = None
+
+## class main ?
+# Get the process ID of the current process
+pid = os.getpid()
+
+## class gui
+# currently unused - for TODO volume settings
+# Slider settings
+slider_min = 0
+slider_max = 100
+slider_default = 100
+slider_step = 1
+
+## class gui
+# initial gui layout
+tab1_layout = [
+    [
+        sg.Column([[sg.T('MOVEMENT ARRAY', font=("Helvetica", 14))]]),
+        sg.Column([[sg.T('                            ', font=("Helvetica", 14))]]),
+        sg.Column([[sg.Text("MODE 1: WALKING", font=("Helvetica", 14), key='-MODE_TEXT-', pad=(25, 0))]])
+    ],
+    [
+        sg.Table(
+            values=[['Left Stick', 'Loading GUI'], ['Left Trigger', 'Please wait!'], ['Right Stick', ' 	⊂(◉‿◉)つ            '], ['Right Trigger', ''],['Mode', ''],
+                    ['Dpad Array', ''], ['Shape Button Array', ''], ['Misc Button Array', ''], ['           ', '           ']],
+            headings=['Parameter', 'Value'],
+            key='-TABLE-',
+            num_rows=9,
+            hide_vertical_scroll=True,
+            pad=(0, 0)
+        ),
+        #TODO: volume slider
+        #sg.Column([
+        #    [sg.Slider(range=(slider_min, slider_max), default_value=slider_default, orientation='h', size=(40, 20), key='-SLIDER-', resolution=slider_step, pad=(50, 0))],
+        #    [sg.Text('', justification='center', size=(10, 10) , pad=(0, 0))]
+        #])
+    ],
+    [sg.Image('./Resources/RamBOTs_Logo_Small.png')],
+]
+
+## class gui
+# only used here and in window as argument
+layout = [tab1_layout]
+
+## class gui or main ?
+# used by gui_handler and lidar_thread_funct
+window = sg.Window('RamBOTs', layout, size=(800, 420))
+
+## class lidar or class main ?
+# flag raised to indicate override of controller values if obstacle is detected
+STOP_FLAG = False
+
+
+# kill_program()
+# This function is used to kill the program when called
+# TODO: needs exception called 
+def kill_program():
+    # Send SIGTERM signal
+    os.kill(pid, signal.SIGTERM)
+
+    # Or send SIGINT signal (equivalent to pressing Ctrl+C)
+    os.kill(pid, signal.SIGINT) 
+
+
+
+## class gui
+# gui_handler(controlled, window)
+# called by threading.thread
+# opens and continuously updates the GUI with parameters from window
+# controller is not used?
+def gui_handler(controller,window): # manage the GUI
+
+    print("hello from gui")
+    while True:
+        event, values = window.read()
+        if event == sg.WIN_CLOSED:           # way out of UI
+            print("brealong")
+            break
+
+## class gui
+# update_table_cell(table, row, col, value)
+# updates specified row and col in table with controller inputs
+def update_table_cell(table, row, col, value):
+    table.Widget.set(table.Widget.get_children()[row], "#" + str(col + 1), value)
+
+## class gui
+# gui_table_handler(controller)
+# called by threading.thread
+# updates table values for gui every 0.1 seconds
+def gui_table_handler(controller): # update the GUI table with controller inputs every x seconds
+    print("hello from gui handler")
+    global table
+
+    while True:
+
+        if (controller.paused):
+            update_table_cell(table, 8, 1, "Sh:0,Op:0,Ps:1,L3:0,R3:0")
+        else:
+            table = window['-TABLE-']
+            update_table_cell(table, 0, 1, f"{controller.l3_horizontal / 32767:5.2f}, {controller.l3_vertical / 32767:5.2f}")
+            update_table_cell(table, 1, 1, f"{controller.triggerL / 65198:5.2f}")
+            update_table_cell(table, 2, 1, f"{controller.r3_horizontal / 32767:5.2f}, {controller.r3_vertical / 32767:5.2f}")
+            update_table_cell(table, 3, 1, f"{controller.triggerR / 65198:5.2f}")
+            update_table_cell(table, 4, 1, f"{controller.mode}")
+            update_table_cell(table, 5, 1, f"←:{controller.dpadArr[0]}  →:{controller.dpadArr[1]}  ↑:{controller.dpadArr[2]}  ↓:{controller.dpadArr[3]}")
+            update_table_cell(table, 6, 1, f"□:{controller.shapeButtonArr[0]}  △:{controller.shapeButtonArr[1]}  ○:{controller.shapeButtonArr[2]}  X:{controller.shapeButtonArr[3]}")
+            update_table_cell(table, 7, 1, f"Sh:{controller.miscButtonArr[0]},Op:{controller.miscButtonArr[1]},Ps:{controller.miscButtonArr[2]},L3:{controller.miscButtonArr[3]},R3:{controller.miscButtonArr[4]}")
+            update_table_cell(table, 8, 1, f"Trim: {controller.trim}")
+            
+        time.sleep(0.1)
+
+## audio class 
+# called when triangle press in ml mode
+def startML():
+    playSound("startMLSound")
+    print("starting machine learning!")
+## audio class 
+# called when triangle press in ml mode
+def killML():
+    playSound("stopMLSound")
+    print("killing machine learning.")
+
+## class lidar
+# postprocess_prediction(output_values)
+# called by run_lidar_inference
+# part of lidar ml path prediction
+def postprocess_prediction(output_values):
+    dequantized_prediction = (output_values.astype(np.float32) / 255.0).reshape(1, -1)
+    prediction_reversed = dequantized_prediction * 2
+    return prediction_reversed
+
+## class lidar
+# preprocess_lidar_data(lidar_data)
+# called by runLidarInference
+# normalize lidar_data to range [0, 1]
+def preprocess_lidar_data(lidar_data):
+    lidar_max_value = 12000
+    uint8_max_value = 255
+
+    # Normalize the output labels to the range [0, 1]
+    data_normalized = lidar_data / lidar_max_value
+    data_mapped = (data_normalized * uint8_max_value).astype(np.uint8)
+    return data_mapped
+
+## class lidar
+# runLidarInference(lidar_data, interpreter)
+# run ML model for autonomous_walk lidar mode
+# get outputs from tflite model on lidar data
+def runLidarInference(lidar_data, interpreter):
+    if len(lidar_data) == 360:
+        print("Running lidar inference")
+        # Get input and output details
+        input_details = interpreter.get_input_details()
+        output_details = interpreter.get_output_details()
+
+        lidar_data = np.array(lidar_data)
+        
+        lidar_data_processed = preprocess_lidar_data(lidar_data)
+
+        # Set input tensor data
+        input_tensor = interpreter.tensor(input_details[0]['index'])
+        input_tensor()[0] = lidar_data_processed
+
+        # Run inference
+        interpreter.invoke()
+
+        # Get the output tensor
+        output_tensor = interpreter.tensor(output_details[0]['index'])
+
+        # Get the output values as a NumPy array
+        output_values = np.array(output_tensor())
+        output_values = postprocess_prediction(output_values)
+
+        shared_queue.put(output_values)
+    else:
+        print("lidar view data incorrect")
+
+
+## driver class
+# rgb(m)
+# controls lighting on controller (maybe)
+def rgb(m):
+    bashCommand, filename = os.path.split(os.path.abspath(__file__))
+    bashCommand = "sudo bash " + bashCommand + "/controllerColor.sh "
+    if m == 0:
+        bashCommand = bashCommand + "255 255 255"
+    elif m == 1:
+        bashCommand = bashCommand + "255 255 0"
+    elif m == 2:
+        bashCommand = bashCommand + "255 111 0"
+    elif m == 3:
+        bashCommand = bashCommand + "8 208 96"
+    elif m == 4:
+        bashCommand = bashCommand + "255 0 255"
+    elif m == 5:
+        bashCommand = bashCommand + "0 255 0"
+    elif m == -1:
+        bashCommand = bashCommand + "255 0 0"
+    else:
+        bashCommand = bashCommand + "255 0 0"
+    subprocess.Popen(bashCommand.split(), stdout=subprocess.PIPE)
+
+
+
+
+
+## driver class
+# value_checker(odrive_values, correct_values)
+# checks odrive values
+def value_checker(odrive_values, correct_values):
+    #checks the values against the correct values
+
+    if (type(odrive_values) is not dict):
+        return (False, {"Error": "value_checker: nested dictionary was not passed in"})
+
+    error_dict = {}
+
+    if (odrive_values == correct_values):
+        return (True, {})
+    
+    
+    for key, expected_value in correct_values.items():
+        actual_value = odrive_values[key]
+
+        if (actual_value != expected_value):
+            error_dict[key] = actual_value
+
+    return (len(error_dict) == 0, error_dict)
+
+## class driver
+# check_odrive_params(input_dict)
+# checks odrive vs expected params
+def check_odrive_params(input_dict):
+    correct_values_axis0 = {'encoder.config.abs_spi_cs_gpio_pin': '7.00', 'encoder.config.cpr': '16384.00', 'encoder.config.mode': '257.00', 'motor.config.current_lim': '22.00', 'motor.config.current_lim_margin': '9.00', 'motor.config.pole_pairs': '20.00', 'motor.config.torque_constant': '0.03', 'controller.config.vel_gain': '0.10', 'controller.config.vel_integrator_gain': '0.08', 'controller.config.vel_limit': ''}
+    correct_values_axis1 = {'encoder.config.abs_spi_cs_gpio_pin': '8.00', 'encoder.config.cpr': '16384.00', 'encoder.config.mode': '257.00', 'motor.config.current_lim': '22.00', 'motor.config.current_lim_margin': '9.00', 'motor.config.pole_pairs': '20.00', 'motor.config.torque_constant': '0.03', 'controller.config.vel_gain': '0.10', 'controller.config.vel_integrator_gain': '0.08', 'controller.config.vel_limit': ''}
+
+    error_list = []
+    for odrivename, odrivedict in input_dict.items():
+        for axisname, axisdict in odrivedict.items():
+            if axisname == "axis0":
+                axis_correct_dict = correct_values_axis0
+            else:
+                axis_correct_dict = correct_values_axis1
+            
+            output = value_checker(axisdict, axis_correct_dict)
+
+            if output[0] is False:
+                value_checker_dict = output[1]
+
+                for param, value in value_checker_dict.items():
+                    error_string = "In " + odrivename + ", " + axisname + ": "
+                    error_string += param + " is " + value + ", should be: " + axis_correct_dict[param]
+                    error_list.append(error_string)
+    
+    return (len(error_list) == 0, error_list)
+
+## class driver
+# padStr(val)
+# process output data to teensy
+def padStr(val):
+    for _ in range (120-len(val)):
+        val = val + "~"
+    return val
+
+## class driver
+# rmPadStr(val)
+# process input data from teensy
+# function to remove all ~ padding
+def rmPadStr(val):
+    outputStr = ""
+    for curChar in val:
+        if curChar != '~':
+            outputStr += curChar
+    return outputStr
+
+
+## class driver
+# getLineSerial(ser)
+# gets info from teensy
+def getLineSerial(ser):
+    line = str(ser.readline())
+    line = line[2:-5]
+    line = rmPadStr(line)
+    return line
+
+## class driver
+# any_greater_than_one(arr)
+# determines if trim is needed - I think to compensate for tilting or turning
+def any_greater_than_one(arr):
+    for value in arr:
+        if value > 1.1 or value < 0.9:
+            return True
+    return False
+
+
+## class AI
+# ball_thread_funct(controller)
+# runs ML model for tennis ball tracking
+def ball_thread_funct(controller):
+    # global TURN_FACTOR
+    #Create Variables
+    model_path = '../../machine_learning/tennisBall/BallTrackingModelQuant_edgetpu.tflite'
+    CAMERA_WIDTH = 320
+    CAMERA_HEIGHT = 240
+    INPUT_WIDTH_AND_HEIGHT = 224
+
+    # Functions
+    def process_image(interpreter, image, input_index):
+        input_data = (np.array(image)).astype(np.uint8)
+        input_data = input_data.reshape((1, 224, 224, 3))
+
+        # Process
+        interpreter.set_tensor(input_index, input_data)
+        interpreter.invoke()
+
+        # Get outputs
+        output_details = interpreter.get_output_details()
+    
+        process_image.prevAreaPos = getattr(process_image, "prevAreaPos", 0)
+
+        positions = (interpreter.get_tensor(output_details[0]['index']))
+        conf = (interpreter.get_tensor(output_details[1]['index'])/255)
+        result = []
+
+        for idx, score in enumerate(conf):
+            pos = positions[0]
+            areaPos = area(pos)
+            if score > 0.99 and  (350 <= areaPos < 50176) and process_image.prevAreaPos > 400:
+                result.append({'pos': positions[idx]})
+            process_image.prevAreaPos = areaPos  # Update prevAreaPos for the next iteration
+
+        return result
+
+
+    def distance(point1, point2):
+        return math.sqrt((point2[0] - point1[0])**2 + (point2[1] - point1[1])**2)
+
+    def area(pos):
+        side_length = distance((pos[0], pos[1]), (pos[2], pos[3]))
+        return side_length ** 2
+
+    def display_result(result, frame):
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        size = 0.6
+        color = (255, 255, 0)  # Blue color
+        thickness = 2
+
+        for obj in result:
+            pos = obj['pos']
+            scale_x = CAMERA_WIDTH / INPUT_WIDTH_AND_HEIGHT
+            scale_y = CAMERA_HEIGHT / INPUT_WIDTH_AND_HEIGHT
+            x1 = int(pos[0] * scale_x)
+            y1 = int(pos[1] * scale_y)
+            x2 = int(pos[2] * scale_x)
+            y2 = int(pos[3] * scale_y)
+
+            if x1 == 57:
+                x1 = 0
+            if x2 == 57:
+                x2 == 0
+            if y1 == 42:
+                y1 = 42
+            if y2 == 42:
+                y2 == 42
+
+            cv2.putText(frame, 'Tennis Ball', (x1, y1), font, size, color, thickness)
+            cv2.rectangle(frame, (x1, y1), (x2, y2), color, thickness)
+
+            center = bboxCenterPoint(x1, y1, x2, y2)
+            calculate_direction(center[0])
+        
+        cv2.imshow('Tracking!', frame)
+        #shared_queue.put(frame)
+
+    def bboxCenterPoint(x1, y1, x2, y2):
+        bbox_center_x = int((x1 + x2) / 2)
+        bbox_center_y = int((y1 + y2) / 2)
+
+        return [bbox_center_x, bbox_center_y]
+
+    def calculate_direction(X, frame_width=CAMERA_WIDTH):
+        increment = frame_width / 3
+        if ((2*increment) <= X <= frame_width):
+            ball_queue.put(-0.1)
+        elif (0 <= X < increment):
+            ball_queue.put(0.1)
+        elif (increment <= X < (2*increment)):
+            ball_queue.put(0)
+
+    # Set up Camera
+    cap = cv2.VideoCapture(0)
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, CAMERA_WIDTH)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, CAMERA_HEIGHT)
+    cap.set(cv2.CAP_PROP_FPS, 30)
+
+    print("Set up Camera")
+
+    # Set up Interpreter
+    interpreter = edgetpu.make_interpreter(model_path, device = 'usb')
+    interpreter.allocate_tensors()
+
+    input_details = interpreter.get_input_details()
+
+    # Get Width and Height
+    input_shape = input_details[0]['shape']
+    height = input_shape[1]
+    width = input_shape[2]
+
+    input_index = input_details[0]['index']
+    
+    print("Set up Interpreter!")
+
+    while True:
+
+        ret, frame = cap.read()
+        
+        if not ret:
+            print('Capture failed')
+            break
+        
+        image = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+        image = image.resize((width, height))
+
+        top_result = process_image(interpreter, image, input_index)
+
+        display_result(top_result, frame)
+        
+    cap.release()
+    cv2.destroyAllWindows()
+    
+
+
+# connect to teensy
+try:
+    ser = serial.Serial('/dev/ttyACM0', 9600)
+except SerialException as e:
+    print(f"An error occurred: {e}. \nPlease unplug the USB to the Teensy, press stop, and plug it in again.")
+    #play sound here
+    playSound("error")
+
+    kill_program()
+
+# initiate remote controller
+controller = MyController(interface="/dev/input/js0", connecting_using_ds4drv=False)
+
+## initiates gui interface
+pi_gui_thread = threading.Thread(target=gui_handler, args=(controller,window))
+pi_gui_thread.daemon = True
+pi_gui_thread.start()
+
+time.sleep(3) # give GUI time to wake up
+
+## initiates pi_gui_table
+pi_gui_table_thread = threading.Thread(target=gui_table_handler, args=(controller,))
+pi_gui_table_thread.daemon = True
+pi_gui_table_thread.start()
+
+## initiates driver thread
+driver_thread = threading.Thread(target=driver_thread_funct, args=(controller,))
+driver_thread.daemon = True
+driver_thread.start()
+
+## initiates machine learning
+ball_thread = threading.Thread(target=ball_thread_funct, args=(controller,))
+ball_thread.daemon = True
+ball_thread.start()
+
+## initiates lidar
+# lidar_thread_funct called in main thread, not seperate thread
+# lidar_thread = threading.Thread(target=lidar_thread_funct, args=(controller,))
+# lidar_thread.daemon = True
+# lidar_thread.start()
+lidar_thread_funct(controller)
+
+# controller.listen()
+
+dthread = threading.Thread(target=controller.listen)
+dthread.daemon = True
+dthread.start()
