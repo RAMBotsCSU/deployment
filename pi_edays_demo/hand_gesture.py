@@ -4,7 +4,6 @@ import logging
 from pycoral.utils import edgetpu
 from pycoral.adapters import common, classify
 import time
-from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
 
 
 def load_model(model_path: str):
@@ -45,7 +44,7 @@ def preprocess_frame(frame, input_shape, input_details):
     resized_frame = cv2.resize(frame, input_shape)
     resized_frame = cv2.cvtColor(resized_frame, cv2.COLOR_BGR2RGB)
 
-    # Handle UINT8 quantized model input
+    # Handle INT8 quantized model input
     scale, zero_point = input_details[0]['quantization']
     if scale > 0:
         resized_frame = ((resized_frame / 255.0) / scale + zero_point).astype(np.int8)
@@ -94,7 +93,7 @@ def run_hand_gesture():
     """Main function to run hand gesture recognition."""
     logging.basicConfig(level=logging.INFO)
 
-    MODEL_FILE = "hand_command_uint8_v2.tflite"
+    MODEL_FILE = "edgetpu_mobilenet.tflite"
     LABELS_FILE = "labels.txt"
 
     # Load model and labels
@@ -150,4 +149,3 @@ def run_hand_gesture():
 
 if __name__ == "__main__":
     run_hand_gesture()
-
