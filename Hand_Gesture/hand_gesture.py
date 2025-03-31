@@ -46,8 +46,9 @@ def preprocess_frame(frame, input_shape, input_details):
 
     # Handle UINT8 quantized model input
     scale, zero_point = input_details[0]['quantization']
+    print(f'Scale: {scale}\nZero Point: {zero_point}')
     if scale > 0:
-        resized_frame = ((resized_frame / 255.0) / scale + zero_point).astype(np.uint8)
+        resized_frame = ((resized_frame / 255.0) / scale + zero_point).astype(np.int8)
 
     # Expand dimensions for batch input
     input_tensor = np.expand_dims(resized_frame, axis=0)
@@ -93,7 +94,7 @@ def run_hand_gesture():
     """Main function to run hand gesture recognition."""
     logging.basicConfig(level=logging.INFO)
 
-    MODEL_FILE = "hand_command_uint8_v2.tflite"
+    MODEL_FILE = "edgetpu_mobilenet_4.tflite"
     LABELS_FILE = "labels.txt"
 
     # Load model and labels
