@@ -5,6 +5,14 @@ from pycoral.utils import edgetpu
 from pycoral.adapters import common, classify
 import time
 
+gesture_to_action = {
+    "fist": "Push Down", 
+    "one": "Move Forward", 
+    "palm": "Push UP", 
+    "peace_inverted": "Move Backward", 
+    "stop": "Stop"
+}
+
 
 def load_model(model_path: str):
     """Load the TFLite model with Edge TPU support."""
@@ -129,12 +137,26 @@ def run_hand_gesture():
             
             input_tensor = preprocess_frame(frame, input_shape, input_details)
             classes = run_inference(interpreter, input_tensor)
+
+            # if classes:
+            #     for c in classes:
+            #         print(f"Detected: {labels.get(c.id, 'Unknown')} with confidence {c.score:.2f}")
+            # else:
+            #     print("No confident predictions.")
+
+            action_text = "Unknown action"
             if classes:
                 for c in classes:
-                    print(f"Detected: {labels.get(c.id, 'Unknown')} with confidence {c.score:.2f}")
+                    label = labels.get(c.id, "Unknown")
+                    action = gesture_to_action.get(label, "Unknown action")
+                    action_text = f"Robot Action: {action}"
+                    print(f"Detected: {label} ({c.score:.2f}) → {action}")
             else:
                 print("No confident predictions.")
+                
             frame = display_results(frame, classes, labels)
+            cv2.putText(frame, action_text, (10, 100), cv2.FONT_HERSHEY_SIMPLEX, 1.2, (255, 0, 0), 3)
+
 
             # Show frame
             cv2.imshow("Hand Gesture Recognition", frame)
