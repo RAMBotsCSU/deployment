@@ -81,12 +81,12 @@ def run_inference(interpreter, input_tensor):
     return classes
 
 
-def display_results(frame: np.ndarray, classes: list, labels: dict, position: tuple = (10, 30)) -> np.ndarray:
+def display_results(frame: np.ndarray, fps: float, classes: list, labels: dict, position: tuple = (10, 30)) -> np.ndarray:
     """Display the inference results on the frame."""
     for c in classes:
         label = labels.get(c.id, f"Class {c.id}")
         score = c.score
-        cv2.putText(frame, f"{label}: {score:.2f}", position, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+        cv2.putText(frame, f"{label}: {score:.2f} \nFPS: {fps:.2f}", position, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
     return frame
 
 
@@ -128,17 +128,14 @@ def run_hand_gesture():
                     print(f"Detected: {labels.get(c.id, 'Unknown')} with confidence {c.score:.2f}")
             else:
                 print("No confident predictions.")
-            frame = display_results(frame, classes, labels)
+            
+            # Calculate FPS
+            fps = 1.0 / (time.time() - start_time)
+
+            frame = display_results(frame, fps, classes, labels)
 
             # Show frame
             cv2.imshow("Hand Gesture Recognition", frame)
-
-            # Calculate and display FPS
-            fps = 1.0 / (time.time() - start_time)
-            cv2.putText(frame, f"FPS: {fps:.2f}", (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
-
-            fps = 1.0 / (time.time() - start_time)
-            cv2.putText(frame, f"FPS: {fps:.2f}", (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
 
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
@@ -150,4 +147,3 @@ def run_hand_gesture():
 
 if __name__ == "__main__":
     run_hand_gesture()
-
